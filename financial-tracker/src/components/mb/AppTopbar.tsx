@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { MobileNav } from "./MobileNav";
 import { signOutAction } from "@/server/actions/auth";
@@ -25,9 +26,12 @@ export function AppTopbar({
         <WorkspaceSwitcher current={current} workspaces={workspaces} />
         <div className="flex items-center gap-3 md:gap-4">
           {userEmail && (
-            <span className="font-mono text-[11px] text-gray-3 hidden md:inline">
+            <Link
+              href="/app/profile"
+              className="font-mono text-[11px] text-gray-3 hover:text-gold transition-colors hidden md:inline"
+            >
               {userEmail}
-            </span>
+            </Link>
           )}
           <form action={signOutAction} className="hidden md:block">
             <button

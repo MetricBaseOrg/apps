@@ -27,6 +27,7 @@ export function Sidebar({ workspaceSlug }: { workspaceSlug: string }) {
         { href: `/app/${workspaceSlug}/settings/workspace`, label: "Workspace" },
         { href: `/app/${workspaceSlug}/settings/categories`, label: "Categories" },
         { href: `/app/${workspaceSlug}/settings/fx`, label: "FX Rates" },
+        { href: `/app/profile`, label: "Profile" },
       ],
     },
   ];
