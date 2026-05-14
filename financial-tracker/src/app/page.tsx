@@ -152,27 +152,83 @@ export default function HomePage() {
       </main>
 
       <footer className="border-t border-line">
-        <div className="mx-auto max-w-[1240px] px-6 md:px-8 py-8 flex flex-col md:flex-row gap-4 justify-between font-mono text-[11px] uppercase tracking-[0.18em] text-gray-3">
-          <span>© MetricBase · Apps · Financial Tracker</span>
-          <div className="flex gap-6">
+        <div className="mx-auto max-w-[1240px] px-6 md:px-8 py-12 grid sm:grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="flex flex-col gap-3">
+            <Eyebrow>MetricBase</Eyebrow>
+            <a
+              href="https://metricbase.org"
+              className="font-mono text-xs text-gray-2 hover:text-gold"
+            >
+              Home
+            </a>
+            <a
+              href="https://metricbase.org/journal"
+              className="font-mono text-xs text-gray-2 hover:text-gold"
+            >
+              Journal
+            </a>
+            <a
+              href="https://metricbase.org/contact"
+              className="font-mono text-xs text-gray-2 hover:text-gold"
+            >
+              Contact us
+            </a>
+          </div>
+          <div className="flex flex-col gap-3">
+            <Eyebrow>Verticals</Eyebrow>
+            <a
+              href="https://energy.metricbase.org"
+              className="font-mono text-xs text-gray-2 hover:text-gold"
+            >
+              Energy
+            </a>
+            <a
+              href="https://chain.metricbase.org"
+              className="font-mono text-xs text-gray-2 hover:text-gold"
+            >
+              Crypto
+            </a>
+            <a
+              href="https://saham.metricbase.org"
+              className="font-mono text-xs text-gray-2 hover:text-gold"
+            >
+              Saham
+            </a>
+          </div>
+          <div className="flex flex-col gap-3">
+            <Eyebrow>Legal</Eyebrow>
             <a
               href="https://metricbase.org/privacy"
-              className="hover:text-gold"
+              className="font-mono text-xs text-gray-2 hover:text-gold"
             >
               Privacy
             </a>
             <a
               href="https://metricbase.org/terms"
-              className="hover:text-gold"
+              className="font-mono text-xs text-gray-2 hover:text-gold"
             >
               Terms
             </a>
             <a
               href="https://metricbase.org/disclaimer"
-              className="hover:text-gold"
+              className="font-mono text-xs text-gray-2 hover:text-gold"
             >
               Disclaimer
             </a>
+          </div>
+          <div className="flex flex-col gap-3">
+            <Eyebrow>App</Eyebrow>
+            <Link
+              href="/sign-in"
+              className="font-mono text-xs text-gray-2 hover:text-gold"
+            >
+              Sign in
+            </Link>
+          </div>
+        </div>
+        <div className="border-t border-line">
+          <div className="mx-auto max-w-[1240px] px-6 md:px-8 py-6 font-mono text-[11px] uppercase tracking-[0.18em] text-gray-3">
+            © MetricBase · Apps · Financial Tracker
           </div>
         </div>
       </footer>

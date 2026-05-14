@@ -6,8 +6,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Eyebrow } from "./Eyebrow";
 import { signOutAction } from "@/server/actions/auth";
+import { METRICBASE_LINKS } from "@/lib/constants";
 
-type Item = { href: string; label: string };
+type Item = { href: string; label: string; external?: boolean };
 
 export function MobileNav({ workspaceSlug }: { workspaceSlug: string }) {
   const [open, setOpen] = useState(false);
@@ -66,6 +67,16 @@ export function MobileNav({ workspaceSlug }: { workspaceSlug: string }) {
         { href: `/app/profile`, label: "Profile" },
       ],
     },
+    {
+      title: "MetricBase",
+      items: [
+        { href: METRICBASE_LINKS.home, label: "Home", external: true },
+        { href: METRICBASE_LINKS.energy, label: "Energy", external: true },
+        { href: METRICBASE_LINKS.chain, label: "Crypto", external: true },
+        { href: METRICBASE_LINKS.saham, label: "Saham", external: true },
+        { href: METRICBASE_LINKS.contact, label: "Contact us", external: true },
+      ],
+    },
   ];
 
   return (
@@ -113,6 +124,21 @@ export function MobileNav({ workspaceSlug }: { workspaceSlug: string }) {
                   <Eyebrow className="px-3">{s.title}</Eyebrow>
                   <div className="flex flex-col gap-px">
                     {s.items.map((i) => {
+                      if (i.external) {
+                        return (
+                          <a
+                            key={i.href}
+                            href={i.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => setOpen(false)}
+                            className="font-mono text-[12px] uppercase tracking-[0.18em] px-3 py-3 text-gray-1 hover:text-gold hover:bg-[rgba(201,168,76,0.06)] transition-colors flex items-center justify-between"
+                          >
+                            <span>{i.label}</span>
+                            <span className="text-gray-3 text-[10px]">↗</span>
+                          </a>
+                        );
+                      }
                       const active = pathname === i.href;
                       return (
                         <Link

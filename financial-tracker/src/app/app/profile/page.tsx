@@ -24,6 +24,12 @@ export default async function ProfilePage() {
       <Topnav sectionLabel="Profile" />
       <main className="flex-1 px-4 sm:px-6 py-8 max-w-2xl mx-auto w-full">
         <div className="flex flex-col gap-8">
+          <Link
+            href="/app"
+            className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-2 hover:text-gold transition-colors self-start"
+          >
+            ← Back to app
+          </Link>
           <header>
             <Eyebrow>Profile</Eyebrow>
             <h1 className="font-sans text-2xl sm:text-3xl font-extrabold text-white mt-2">

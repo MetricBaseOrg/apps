@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireMembership } from "@/server/workspace";
 import { db } from "@/server/db";
 import { Eyebrow } from "@/components/mb/Eyebrow";
@@ -15,6 +16,12 @@ export default async function WorkspaceSettingsPage({
   });
   return (
     <div className="flex flex-col gap-8 max-w-2xl">
+      <Link
+        href={`/app/${slug}/dashboard`}
+        className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-2 hover:text-gold transition-colors self-start"
+      >
+        ← Back to dashboard
+      </Link>
       <header>
         <Eyebrow>Settings</Eyebrow>
         <h1 className="font-sans text-2xl sm:text-3xl font-extrabold text-white mt-2">

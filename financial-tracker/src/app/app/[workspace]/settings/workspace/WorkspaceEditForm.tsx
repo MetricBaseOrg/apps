@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useRouter } from "next/navigation";
 import {
   updateWorkspace,
   type UpdateWorkspaceState,
@@ -19,6 +20,7 @@ export function WorkspaceEditForm({
   currencyLocked: boolean;
   txnCount: number;
 }) {
+  const router = useRouter();
   const action = updateWorkspace.bind(null, slug);
   const [state, formAction, pending] = useActionState<
     UpdateWorkspaceState,
@@ -128,9 +130,18 @@ export function WorkspaceEditForm({
         </p>
       )}
 
-      <GoldButton type="submit" variant="primary" disabled={pending}>
-        {pending ? "Saving…" : "Save changes"}
-      </GoldButton>
+      <div className="flex gap-3">
+        <GoldButton type="submit" variant="primary" disabled={pending}>
+          {pending ? "Saving…" : "Save changes"}
+        </GoldButton>
+        <button
+          type="button"
+          onClick={() => router.push(`/app/${slug}/dashboard`)}
+          className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-2 hover:text-gold transition-colors px-4 py-2.5 border border-line hover:border-gold"
+        >
+          Cancel
+        </button>
+      </div>
     </form>
   );
 }
