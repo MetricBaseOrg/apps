@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@theme {
+  --color-black: #0a0a0a;
+  --color-bg-elev: #131313;
+  --color-bg-card: #161616;
+  --color-bg-hover: #1c1c1c;
+  --color-gold: #c9a84c;
+  --color-gold-bright: #e5c168;
+  --color-gold-dim: #8a7434;
+  --color-white: #ffffff;
+  --color-gray-1: #e5e5e5;
+  --color-gray-2: #999999;
+  --color-gray-3: #555555;
+  --color-gray-4: #2a2a2a;
+  --color-line: rgba(255, 255, 255, 0.06);
+  --color-line-strong: rgba(201, 168, 76, 0.3);
+  --color-up: #2faf65;
+  --color-down: #d4524a;
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "Courier New", monospace;
+
+  --radius-xs: 0;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-3xl: 0;
+}
+
+html,
+body {
+  background: var(--color-black);
+  color: var(--color-gray-1);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.mb-page {
+  background:
+    radial-gradient(ellipse 900px 700px at 15% 0%, rgba(201, 168, 76, 0.06), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 85% 100%, rgba(201, 168, 76, 0.04), transparent 70%),
+    var(--color-black);
+  min-height: 100vh;
+  position: relative;
+}
+
+.grid-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.mb-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-line);
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.mb-card:hover {
+  border-color: var(--color-line-strong);
+}
+
+.mb-input {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-line);
+  color: var(--color-gray-1);
+  font-family: var(--font-sans);
+  padding: 10px 12px;
+  width: 100%;
+  outline: none;
+  transition: border-color 150ms ease;
+}
+
+.mb-input:focus {
+  border-color: var(--color-gold);
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-black);
+}
