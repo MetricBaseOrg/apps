@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Eyebrow } from "./Eyebrow";
@@ -10,7 +11,12 @@ type Item = { href: string; label: string };
 
 export function MobileNav({ workspaceSlug }: { workspaceSlug: string }) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close on route change
   useEffect(() => {
@@ -80,14 +86,14 @@ export function MobileNav({ workspaceSlug }: { workspaceSlug: string }) {
         </span>
       </button>
 
-      {open && (
+      {open && mounted && createPortal(
         <div
-          className="md:hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+          className="md:hidden fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm"
           onClick={() => setOpen(false)}
         >
           <nav
             onClick={(e) => e.stopPropagation()}
-            className="absolute right-0 top-0 bottom-0 w-[280px] bg-[var(--color-bg-elev)] border-l border-line flex flex-col overflow-y-auto"
+            className="absolute right-0 top-0 bottom-0 w-[280px] max-w-[85vw] bg-[var(--color-bg-elev)] border-l border-line flex flex-col overflow-y-auto"
           >
             <div className="flex justify-between items-center h-16 px-5 border-b border-line shrink-0">
               <Eyebrow>Menu</Eyebrow>
@@ -134,7 +140,8 @@ export function MobileNav({ workspaceSlug }: { workspaceSlug: string }) {
               </button>
             </form>
           </nav>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

@@ -20,7 +20,7 @@ export function AppTopbar({
   userEmail?: string | null;
 }) {
   return (
-    <header className="border-b border-line bg-[var(--color-bg-elev)]/60 backdrop-blur-sm">
+    <header className="border-b border-line bg-[var(--color-bg-elev)]">
       <div className="flex h-16 items-center justify-between gap-3 px-4 md:px-6">
         <WorkspaceSwitcher current={current} workspaces={workspaces} />
         <div className="flex items-center gap-3 md:gap-4">

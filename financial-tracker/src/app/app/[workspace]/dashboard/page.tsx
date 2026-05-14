@@ -131,22 +131,46 @@ export default async function DashboardPage({
               return (
                 <div
                   key={t.id}
-                  className="grid grid-cols-[100px_1fr_180px_140px] py-2.5 border-b border-line last:border-b-0 items-center text-sm"
+                  className="py-2.5 border-b border-line last:border-b-0 text-sm"
                 >
-                  <span className="font-mono text-xs text-gray-2">
-                    {t.date.toISOString().slice(0, 10)}
-                  </span>
-                  <span className="text-white">
-                    {t.memo || t.category?.name || "—"}
-                  </span>
-                  <span className="font-mono text-xs text-gray-3">
-                    {t.finAccount.name}
-                    {t.counterAccount ? ` → ${t.counterAccount.name}` : ""}
-                  </span>
-                  <span className={`mono text-sm text-right ${tone}`}>
-                    {sign}{" "}
-                    <Money value={t.amount.toString()} currency={t.currency} />
-                  </span>
+                  {/* Desktop row */}
+                  <div className="hidden md:grid grid-cols-[100px_1fr_180px_140px] items-center">
+                    <span className="font-mono text-xs text-gray-2">
+                      {t.date.toISOString().slice(0, 10)}
+                    </span>
+                    <span className="text-white truncate">
+                      {t.memo || t.category?.name || "—"}
+                    </span>
+                    <span className="font-mono text-xs text-gray-3 truncate">
+                      {t.finAccount.name}
+                      {t.counterAccount ? ` → ${t.counterAccount.name}` : ""}
+                    </span>
+                    <span className={`mono text-sm text-right ${tone}`}>
+                      {sign}{" "}
+                      <Money value={t.amount.toString()} currency={t.currency} />
+                    </span>
+                  </div>
+                  {/* Mobile card */}
+                  <div className="md:hidden flex flex-col gap-1">
+                    <div className="flex justify-between items-start gap-3">
+                      <span className="text-white truncate flex-1 min-w-0">
+                        {t.memo || t.category?.name || "—"}
+                      </span>
+                      <span className={`mono text-sm shrink-0 ${tone}`}>
+                        {sign}{" "}
+                        <Money value={t.amount.toString()} currency={t.currency} />
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center gap-3">
+                      <span className="font-mono text-[10px] text-gray-3 uppercase tracking-[0.15em]">
+                        {t.date.toISOString().slice(0, 10)}
+                      </span>
+                      <span className="font-mono text-[10px] text-gray-3 truncate text-right">
+                        {t.finAccount.name}
+                        {t.counterAccount ? ` → ${t.counterAccount.name}` : ""}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               );
             })}
