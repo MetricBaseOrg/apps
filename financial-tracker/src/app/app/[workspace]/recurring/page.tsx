@@ -13,7 +13,19 @@ export default async function RecurringPage({
   const [rules, dueCount, accounts, categories] = await Promise.all([
     db.recurringRule.findMany({
       where: { workspaceId: workspace.id },
-      include: { finAccount: true },
+      include: {
+        finAccount: {
+          select: {
+            id: true,
+            name: true,
+            currency: true,
+            type: true,
+            createdAt: true,
+            archivedAt: true,
+            workspaceId: true,
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
     }),
     db.recurringRule.count({
@@ -33,16 +45,19 @@ export default async function RecurringPage({
     }),
   ]);
 
+  const serializedRules = rules.map((r) => ({
+    ...r,
+    amount: r.amount.toString(),
+    finAccount: {
+      id: r.finAccount.id,
+      name: r.finAccount.name,
+      currency: r.finAccount.currency,
+    },
+  })) as any;
+
   return (
     <RecurringContent
-      rules={rules.map((r) => ({
-        ...r,
-        amount: r.amount.toString(),
-        finAccount: {
-          ...r.finAccount,
-          openingBalance: r.finAccount.openingBalance.toString(),
-        },
-      }))}
+      rules={serializedRules}
       dueRulesCount={dueCount}
       slug={slug}
       accounts={accounts}

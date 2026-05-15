@@ -8,7 +8,7 @@ import { RecurringRuleForm } from './RecurringRuleForm';
 type Rule = {
   id: string;
   type: 'INCOME' | 'EXPENSE' | 'TRANSFER';
-  amount: string;
+  amount: string | any;
   currency: string;
   memo?: string | null;
   freq: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
@@ -18,16 +18,7 @@ type Rule = {
   finAccountId: string;
   counterAccountId?: string | null;
   categoryId?: string | null;
-  finAccount: {
-    id: string;
-    name: string;
-    currency: string;
-    createdAt: Date;
-    type: string;
-    openingBalance: string;
-    archivedAt: Date | null;
-    workspaceId: string;
-  };
+  finAccount: any;
   nextRunDate: Date;
 };
 
@@ -137,22 +128,22 @@ export function RecurringContent({
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-line">
-                    <th className="text-left px-6 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-3">
+                    <th className="text-left px-3 sm:px-6 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-3">
                       Account
                     </th>
-                    <th className="text-left px-6 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-3">
+                    <th className="text-left px-3 sm:px-6 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-3 hidden sm:table-cell">
                       Type
                     </th>
-                    <th className="text-right px-6 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-3">
+                    <th className="text-right px-3 sm:px-6 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-3">
                       Amount
                     </th>
-                    <th className="text-left px-6 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-3">
+                    <th className="text-left px-3 sm:px-6 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-3 hidden md:table-cell">
                       Frequency
                     </th>
-                    <th className="text-left px-6 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-3">
+                    <th className="text-left px-3 sm:px-6 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-3 hidden md:table-cell">
                       Next run
                     </th>
-                    <th className="text-right px-6 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-3">
+                    <th className="text-right px-3 sm:px-6 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-3">
                       Actions
                     </th>
                   </tr>
@@ -165,21 +156,23 @@ export function RecurringContent({
                         key={rule.id}
                         className="border-b border-line last:border-b-0 hover:bg-[var(--color-bg-hover)] transition-colors"
                       >
-                        <td className="px-6 py-3 text-white">
+                        <td className="px-3 sm:px-6 py-3 text-white text-xs sm:text-sm">
                           {rule.finAccount.name}
                         </td>
-                        <td className="px-6 py-3 text-gray-2">{rule.type}</td>
-                        <td className="px-6 py-3 text-right text-white font-mono text-xs">
+                        <td className="px-3 sm:px-6 py-3 text-gray-2 hidden sm:table-cell text-xs">
+                          {rule.type}
+                        </td>
+                        <td className="px-3 sm:px-6 py-3 text-right text-white font-mono text-xs">
                           {rule.amount} {rule.currency}
                         </td>
-                        <td className="px-6 py-3 text-gray-2">
+                        <td className="px-3 sm:px-6 py-3 text-gray-2 hidden md:table-cell text-xs">
                           Every {rule.interval} {rule.freq.toLowerCase()}
                           {rule.interval > 1 ? 's' : ''}
                         </td>
-                        <td className="px-6 py-3 text-gray-2 text-xs">
+                        <td className="px-3 sm:px-6 py-3 text-gray-2 text-xs hidden md:table-cell">
                           {rule.nextRunDate.toISOString().slice(0, 10)}
                         </td>
-                        <td className="px-6 py-3 text-right flex gap-2 justify-end">
+                        <td className="px-3 sm:px-6 py-3 text-right flex gap-1 sm:gap-2 justify-end text-xs sm:text-sm">
                           <button
                             onClick={() => setEditingRuleId(rule.id)}
                             className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold hover:text-white transition-colors"
