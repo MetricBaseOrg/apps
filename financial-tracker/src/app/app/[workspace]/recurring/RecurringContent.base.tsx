@@ -70,10 +70,7 @@ export function RecurringContent({
 
         {dueRulesCount > 0 && (
           <form
-            action={async () => {
-              'use server';
-              await postDueRules(slug);
-            }}
+            action={postDueRules.bind(null, slug)}
             className="mb-card p-6 flex gap-4 items-center"
           >
             <div className="flex-1">
@@ -185,10 +182,7 @@ export function RecurringContent({
                             Edit
                           </button>
                           <form
-                            action={async () => {
-                              'use server';
-                              await deleteRecurringRule(slug, rule.id);
-                            }}
+                            action={deleteRecurringRule.bind(null, slug, rule.id)}
                             className="inline"
                             onSubmit={(e) => {
                               if (
