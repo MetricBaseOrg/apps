@@ -11,6 +11,7 @@ export function Sidebar({ workspaceSlug }: { workspaceSlug: string }) {
       items: [
         { href: `/app/${workspaceSlug}/dashboard`, label: "Dashboard" },
         { href: `/app/${workspaceSlug}/transactions`, label: "Transactions" },
+        { href: `/app/${workspaceSlug}/recurring`, label: "Recurring" },
         { href: `/app/${workspaceSlug}/accounts`, label: "Accounts" },
         { href: `/app/${workspaceSlug}/budgets`, label: "Budgets" },
       ],

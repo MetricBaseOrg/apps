@@ -116,6 +116,87 @@ export async function createRecurringRule(
   return { success: true };
 }
 
+export async function updateRecurringRule(
+  slug: string,
+  ruleId: string,
+  _prev: RecurringState | undefined,
+  formData: FormData,
+): Promise<RecurringState> {
+  const { workspace } = await requireMembership(slug, "ADMIN");
+
+  const rule = await db.recurringRule.findFirst({
+    where: { id: ruleId, workspaceId: workspace.id },
+  });
+  if (!rule) {
+    return { error: "Rule not found" };
+  }
+
+  const parsed = recurringRuleSchema.safeParse({
+    finAccountId: formData.get("finAccountId"),
+    counterAccountId: formData.get("counterAccountId") || undefined,
+    categoryId: formData.get("categoryId") || undefined,
+    type: formData.get("type"),
+    amount: formData.get("amount"),
+    currency: formData.get("currency"),
+    memo: formData.get("memo"),
+    freq: formData.get("freq"),
+    interval: formData.get("interval"),
+    startDate: formData.get("startDate"),
+    endDate: formData.get("endDate") || undefined,
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const finAccount = await db.finAccount.findFirst({
+    where: { id: parsed.data.finAccountId, workspaceId: workspace.id },
+  });
+  if (!finAccount) {
+    return { error: "Account not found" };
+  }
+
+  if (parsed.data.counterAccountId) {
+    const counterAccount = await db.finAccount.findFirst({
+      where: { id: parsed.data.counterAccountId, workspaceId: workspace.id },
+    });
+    if (!counterAccount) {
+      return { error: "Counter account not found" };
+    }
+  }
+
+  if (parsed.data.categoryId) {
+    const category = await db.category.findFirst({
+      where: { id: parsed.data.categoryId, workspaceId: workspace.id },
+    });
+    if (!category) {
+      return { error: "Category not found" };
+    }
+  }
+
+  await db.recurringRule.update({
+    where: { id: ruleId },
+    data: {
+      finAccountId: parsed.data.finAccountId,
+      counterAccountId: parsed.data.counterAccountId || undefined,
+      categoryId: parsed.data.categoryId || undefined,
+      type: parsed.data.type as "INCOME" | "EXPENSE" | "TRANSFER",
+      amount: new Decimal(parsed.data.amount),
+      currency: parsed.data.currency,
+      memo: parsed.data.memo,
+      freq: parsed.data.freq as "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY",
+      interval: parsed.data.interval,
+      startDate: parsed.data.startDate,
+      endDate: parsed.data.endDate,
+    },
+  });
+
+  revalidatePath(`/app/${slug}/recurring`);
+  revalidatePath(`/app/${slug}/transactions`);
+  revalidatePath(`/app/${slug}/dashboard`);
+  return { success: true };
+}
+
 export async function deleteRecurringRule(
   slug: string,
   ruleId: string,
