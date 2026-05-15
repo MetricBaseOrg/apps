@@ -87,7 +87,7 @@ export async function GET() {
 
     response.cookies.set("authjs.session-token", sessionToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
       sameSite: "lax",
       maxAge: 30 * 24 * 60 * 60,
       path: "/",
