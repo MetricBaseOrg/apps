@@ -86,7 +86,7 @@ export default async function RecurringPage({
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right text-white">
-                    <Money amount={rule.amount} currency={rule.currency} />
+                    <Money value={rule.amount} currency={rule.currency} />
                   </td>
                   <td className="px-4 py-3 text-white text-xs">
                     Every {rule.interval} {rule.freq.toLowerCase()}
