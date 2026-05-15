@@ -23,6 +23,10 @@ const recurringRuleSchema = z.object({
 
 export type RecurringState = { error?: string; success?: boolean };
 
+export async function postDueRulesAction(slug: string, _formData: FormData): Promise<void> {
+  await postDueRules(slug, undefined, _formData);
+}
+
 export async function postDueRules(
   slug: string,
   _prev: RecurringState | undefined,

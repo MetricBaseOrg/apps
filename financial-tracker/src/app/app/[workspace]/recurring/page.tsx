@@ -2,7 +2,7 @@ import { requireMembership } from "@/server/workspace";
 import { db } from "@/server/db";
 import { Eyebrow } from "@/components/mb/Eyebrow";
 import { Money } from "@/components/mb/Money";
-import { postDueRules } from "@/server/actions/recurring";
+import { postDueRulesAction } from "@/server/actions/recurring";
 
 export default async function RecurringPage({
   params,
@@ -39,7 +39,7 @@ export default async function RecurringPage({
       </header>
 
       {dueCount > 0 && (
-        <form action={postDueRules.bind(null, slug)} className="flex gap-2">
+        <form action={postDueRulesAction.bind(null, slug)} className="flex gap-2">
           <button
             type="submit"
             className="font-mono text-[11px] uppercase tracking-[0.2em] text-gold hover:text-gold-bright px-3 py-2 border border-gold/30 hover:border-gold/50 transition-colors"
