@@ -50,6 +50,7 @@ export function RecurringContent({
   categories,
 }: Props) {
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
+  const [deletingRuleId, setDeletingRuleId] = useState<string | null>(null);
   const [postState, postFormAction, postPending] = useActionState<RecurringState, FormData>(
     postDueRules.bind(null, slug),
     {},
@@ -185,26 +186,23 @@ export function RecurringContent({
                           >
                             Edit
                           </button>
-                          <form
-                            action={deleteRecurringRule.bind(null, slug, rule.id)}
-                            className="inline"
-                            onSubmit={(e) => {
-                              if (
-                                !confirm(
-                                  'Are you sure you want to delete this rule?',
-                                )
-                              ) {
-                                e.preventDefault();
+                          <button
+                            onClick={async () => {
+                              if (!confirm('Are you sure you want to delete this rule?')) {
+                                return;
+                              }
+                              setDeletingRuleId(rule.id);
+                              try {
+                                await deleteRecurringRule(slug, rule.id);
+                              } finally {
+                                setDeletingRuleId(null);
                               }
                             }}
+                            disabled={deletingRuleId === rule.id}
+                            className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-down)] hover:text-white transition-colors disabled:opacity-50"
                           >
-                            <button
-                              type="submit"
-                              className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-down)] hover:text-white transition-colors"
-                            >
-                              Delete
-                            </button>
-                          </form>
+                            {deletingRuleId === rule.id ? "Deleting…" : "Delete"}
+                          </button>
                         </td>
                       </tr>
                     ))}

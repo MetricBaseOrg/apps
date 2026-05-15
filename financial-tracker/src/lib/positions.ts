@@ -10,7 +10,7 @@ export interface AggregatedPosition {
 }
 
 export function aggregatePosition(
-  position: Position & { finAccount?: FinAccount | null },
+  position: Position & { finAccount: FinAccount | null },
   lots: Lot[],
 ): AggregatedPosition {
   const buyLots = lots.filter((l) => l.side === "BUY");
