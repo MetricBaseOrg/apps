@@ -35,7 +35,7 @@ export default async function RecurringPage({
 
   return (
     <RecurringContent
-      rules={rules}
+      rules={rules.map((r) => ({ ...r, amount: r.amount.toString() }))}
       dueRulesCount={dueCount}
       slug={slug}
       accounts={accounts}
