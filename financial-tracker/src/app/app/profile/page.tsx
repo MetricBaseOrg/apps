@@ -32,16 +32,27 @@ export default async function ProfilePage() {
           </Link>
           <header>
             <Eyebrow>Profile</Eyebrow>
-            <h1 className="font-sans text-2xl sm:text-3xl font-extrabold text-white mt-2">
-              Your account
-            </h1>
-            <p className="text-gray-2 text-sm mt-2">
-              Your name appears across MetricBase. Email is your sign-in
-              identifier and can&apos;t be changed here.
-            </p>
+            <div className="flex items-start gap-4 mt-2">
+              {user.image && (
+                <img
+                  src={user.image}
+                  alt="Profile avatar"
+                  className="w-16 h-16 object-cover border border-line flex-shrink-0"
+                />
+              )}
+              <div className="flex-1">
+                <h1 className="font-sans text-2xl sm:text-3xl font-extrabold text-white">
+                  Your account
+                </h1>
+                <p className="text-gray-2 text-sm mt-2">
+                  Your name appears across MetricBase. Email is your sign-in
+                  identifier and can&apos;t be changed here.
+                </p>
+              </div>
+            </div>
           </header>
 
-          <ProfileEditForm initialName={user.name ?? ""} />
+          <ProfileEditForm initialName={user.name ?? ""} initialImage={user.image} />
 
           <div className="mb-card p-6 flex flex-col gap-3">
             <Eyebrow>Account</Eyebrow>
