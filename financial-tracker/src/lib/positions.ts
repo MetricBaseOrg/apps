@@ -1,8 +1,8 @@
 import Decimal from "decimal.js";
-import { Lot, Position } from "@prisma/client";
+import { Lot, Position, FinAccount } from "@prisma/client";
 
 export interface AggregatedPosition {
-  position: Position;
+  position: Position & { finAccount: FinAccount | null };
   quantity: Decimal;
   avgCostPerUnit: Decimal;
   totalCostBasis: Decimal;
@@ -10,7 +10,7 @@ export interface AggregatedPosition {
 }
 
 export function aggregatePosition(
-  position: Position,
+  position: Position & { finAccount?: FinAccount | null },
   lots: Lot[],
 ): AggregatedPosition {
   const buyLots = lots.filter((l) => l.side === "BUY");
