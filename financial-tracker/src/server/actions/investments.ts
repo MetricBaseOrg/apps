@@ -27,7 +27,9 @@ export async function recordTrade(
   _prev: InvestmentState | undefined,
   formData: FormData,
 ): Promise<InvestmentState> {
+  console.log("[recordTrade] Starting with slug:", slug);
   const { workspace } = await requireMembership(slug, "ADMIN");
+  console.log("[recordTrade] Workspace found:", workspace.id);
 
   const parsed = tradeSchema.safeParse({
     finAccountId: formData.get("finAccountId"),
@@ -41,22 +43,28 @@ export async function recordTrade(
   });
 
   if (!parsed.success) {
+    console.log("[recordTrade] Schema validation failed:", parsed.error.issues[0]?.message);
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
+  console.log("[recordTrade] Schema validation passed, data:", parsed.data);
 
   const finAccount = await db.finAccount.findFirst({
     where: { id: parsed.data.finAccountId, workspaceId: workspace.id },
   });
   if (!finAccount) {
+    console.log("[recordTrade] Account not found:", parsed.data.finAccountId);
     return { error: "Account not found" };
   }
+  console.log("[recordTrade] Account found:", finAccount.id, "type:", finAccount.type);
 
   if (finAccount.type !== "BROKERAGE" && finAccount.type !== "CRYPTO") {
+    console.log("[recordTrade] Invalid account type:", finAccount.type);
     return {
       error: "Only BROKERAGE and CRYPTO accounts support investment tracking",
     };
   }
 
+  console.log("[recordTrade] Getting FX rate...");
   const quantity = new Decimal(parsed.data.quantity);
   const unitPrice = new Decimal(parsed.data.unitPrice);
   const fee = new Decimal(parsed.data.fee);
@@ -65,6 +73,7 @@ export async function recordTrade(
     workspace.baseCurrency,
     parsed.data.date,
   );
+  console.log("[recordTrade] FX rate:", fxRate);
 
   let amount: Decimal;
   if (parsed.data.side === "BUY") {
@@ -74,105 +83,121 @@ export async function recordTrade(
   }
 
   const baseAmount = amount.mul(fxRate);
+  console.log("[recordTrade] Amount:", amount.toString(), "BaseAmount:", baseAmount.toString());
 
-  const result = await db.$transaction(async (tx) => {
-    const position = await tx.position.upsert({
-      where: {
-        finAccountId_symbol: {
+  try {
+    console.log("[recordTrade] Starting transaction...");
+    const result = await db.$transaction(async (tx) => {
+      console.log("[recordTrade] Inside transaction, upserting position...");
+      const position = await tx.position.upsert({
+        where: {
+          finAccountId_symbol: {
+            finAccountId: parsed.data.finAccountId,
+            symbol: parsed.data.symbol,
+          },
+        },
+        create: {
+          workspaceId: workspace.id,
           finAccountId: parsed.data.finAccountId,
           symbol: parsed.data.symbol,
+          unitKind: parsed.data.unitKind as "SHARES" | "TOKENS" | "LOTS",
         },
-      },
-      create: {
-        workspaceId: workspace.id,
-        finAccountId: parsed.data.finAccountId,
-        symbol: parsed.data.symbol,
-        unitKind: parsed.data.unitKind as "SHARES" | "TOKENS" | "LOTS",
-      },
-      update: {
-        unitKind: parsed.data.unitKind as "SHARES" | "TOKENS" | "LOTS",
-      },
-    });
+        update: {
+          unitKind: parsed.data.unitKind as "SHARES" | "TOKENS" | "LOTS",
+        },
+      });
+      console.log("[recordTrade] Position upserted:", position.id);
 
-    const txn = await tx.transaction.create({
-      data: {
-        workspaceId: workspace.id,
-        finAccountId: parsed.data.finAccountId,
-        date: parsed.data.date,
-        amount,
-        currency: finAccount.currency,
-        fxRate,
-        baseAmount,
-        type: parsed.data.side === "BUY" ? "EXPENSE" : "INCOME",
-        positionId: position.id,
-      },
-    });
-
-    if (parsed.data.side === "BUY") {
-      await tx.lot.create({
+      const txn = await tx.transaction.create({
         data: {
+          workspaceId: workspace.id,
+          finAccountId: parsed.data.finAccountId,
+          date: parsed.data.date,
+          amount,
+          currency: finAccount.currency,
+          fxRate,
+          baseAmount,
+          type: parsed.data.side === "BUY" ? "EXPENSE" : "INCOME",
           positionId: position.id,
-          transactionId: txn.id,
-          side: "BUY",
-          quantity,
-          unitCost: unitPrice,
-          fee,
-          remainingQty: quantity,
-          acquiredDate: parsed.data.date,
         },
       });
-    } else {
-      const openLots = await tx.lot.findMany({
-        where: { positionId: position.id, side: "BUY", closedAt: null },
-        orderBy: { acquiredDate: "asc" },
-      });
+      console.log("[recordTrade] Transaction created:", txn.id);
 
-      let remaining = quantity;
-      for (const lot of openLots) {
-        if (remaining.isZero()) break;
-
-        const consumed = remaining.greaterThan(lot.remainingQty)
-          ? lot.remainingQty
-          : remaining;
-
-        await tx.lot.update({
-          where: { id: lot.id },
+      if (parsed.data.side === "BUY") {
+        await tx.lot.create({
           data: {
-            remainingQty: lot.remainingQty.minus(consumed),
-            closedAt: lot.remainingQty.equals(consumed) ? parsed.data.date : null,
+            positionId: position.id,
+            transactionId: txn.id,
+            side: "BUY",
+            quantity,
+            unitCost: unitPrice,
+            fee,
+            remainingQty: quantity,
+            acquiredDate: parsed.data.date,
           },
         });
+        console.log("[recordTrade] Lot created for BUY");
+      } else {
+        const openLots = await tx.lot.findMany({
+          where: { positionId: position.id, side: "BUY", closedAt: null },
+          orderBy: { acquiredDate: "asc" },
+        });
 
-        remaining = remaining.minus(consumed);
+        let remaining = quantity;
+        for (const lot of openLots) {
+          if (remaining.isZero()) break;
+
+          const consumed = remaining.greaterThan(lot.remainingQty)
+            ? lot.remainingQty
+            : remaining;
+
+          await tx.lot.update({
+            where: { id: lot.id },
+            data: {
+              remainingQty: lot.remainingQty.minus(consumed),
+              closedAt: lot.remainingQty.equals(consumed) ? parsed.data.date : null,
+            },
+          });
+
+          remaining = remaining.minus(consumed);
+        }
+
+        if (remaining.greaterThan(0)) {
+          return { error: "Insufficient holdings to sell" };
+        }
+
+        await tx.lot.create({
+          data: {
+            positionId: position.id,
+            transactionId: txn.id,
+            side: "SELL",
+            quantity,
+            unitCost: unitPrice,
+            fee,
+            remainingQty: new Decimal(0),
+            acquiredDate: parsed.data.date,
+            closedAt: parsed.data.date,
+          },
+        });
       }
 
-      if (remaining.greaterThan(0)) {
-        return { error: "Insufficient holdings to sell" };
-      }
+      console.log("[recordTrade] Transaction complete, returning success");
+      return { success: true };
+    });
 
-      await tx.lot.create({
-        data: {
-          positionId: position.id,
-          transactionId: txn.id,
-          side: "SELL",
-          quantity,
-          unitCost: unitPrice,
-          fee,
-          remainingQty: new Decimal(0),
-          acquiredDate: parsed.data.date,
-          closedAt: parsed.data.date,
-        },
-      });
+    console.log("[recordTrade] Transaction result:", result);
+    if (result.success) {
+      console.log("[recordTrade] Revalidating paths...");
+      revalidatePath(`/app/${slug}/investments`);
+      revalidatePath(`/app/${slug}/transactions`);
+      revalidatePath(`/app/${slug}/dashboard`);
+      console.log("[recordTrade] Paths revalidated");
     }
 
-    return { success: true };
-  });
-
-  if (result.success) {
-    revalidatePath(`/app/${slug}/investments`);
-    revalidatePath(`/app/${slug}/transactions`);
-    revalidatePath(`/app/${slug}/dashboard`);
+    console.log("[recordTrade] Returning result:", result);
+    return result;
+  } catch (error) {
+    console.error("Trade recording error:", error);
+    return { error: "Failed to record trade. Please try again." };
   }
-
-  return result;
 }
