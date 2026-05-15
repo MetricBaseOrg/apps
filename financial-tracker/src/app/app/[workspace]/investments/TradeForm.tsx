@@ -1,5 +1,5 @@
-'use client';
-import { useActionState, useState, useRef, useEffect } from 'react';
+"use client";
+import { useActionState, useState, useRef, useEffect } from "react";
 import {
   recordTrade,
   type InvestmentState,

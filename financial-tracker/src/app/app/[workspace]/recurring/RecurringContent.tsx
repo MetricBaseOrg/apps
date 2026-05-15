@@ -1,5 +1,5 @@
-'use client';
-import { useState } from 'react';
+"use client";
+import { useState } from "react";
 import { Eyebrow } from '@/components/mb/Eyebrow';
 import { GoldButton } from '@/components/mb/GoldButton';
 import { postDueRules, deleteRecurringRule } from '@/server/actions/recurring';
