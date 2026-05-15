@@ -27,9 +27,7 @@ export async function recordTrade(
   _prev: InvestmentState | undefined,
   formData: FormData,
 ): Promise<InvestmentState> {
-  console.log("[recordTrade] Starting with slug:", slug);
-  const { workspace } = await requireMembership(slug, "ADMIN");
-  console.log("[recordTrade] Workspace found:", workspace.id);
+  const { workspace } = await requireMembership(slug);
 
   const parsed = tradeSchema.safeParse({
     finAccountId: formData.get("finAccountId"),
@@ -43,28 +41,22 @@ export async function recordTrade(
   });
 
   if (!parsed.success) {
-    console.log("[recordTrade] Schema validation failed:", parsed.error.issues[0]?.message);
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
-  console.log("[recordTrade] Schema validation passed, data:", parsed.data);
 
   const finAccount = await db.finAccount.findFirst({
     where: { id: parsed.data.finAccountId, workspaceId: workspace.id },
   });
   if (!finAccount) {
-    console.log("[recordTrade] Account not found:", parsed.data.finAccountId);
     return { error: "Account not found" };
   }
-  console.log("[recordTrade] Account found:", finAccount.id, "type:", finAccount.type);
 
   if (finAccount.type !== "BROKERAGE" && finAccount.type !== "CRYPTO") {
-    console.log("[recordTrade] Invalid account type:", finAccount.type);
     return {
       error: "Only BROKERAGE and CRYPTO accounts support investment tracking",
     };
   }
 
-  console.log("[recordTrade] Getting FX rate...");
   const quantity = new Decimal(parsed.data.quantity);
   const unitPrice = new Decimal(parsed.data.unitPrice);
   const fee = new Decimal(parsed.data.fee);
@@ -73,7 +65,6 @@ export async function recordTrade(
     workspace.baseCurrency,
     parsed.data.date,
   );
-  console.log("[recordTrade] FX rate:", fxRate);
 
   let amount: Decimal;
   if (parsed.data.side === "BUY") {
@@ -83,12 +74,9 @@ export async function recordTrade(
   }
 
   const baseAmount = amount.mul(fxRate);
-  console.log("[recordTrade] Amount:", amount.toString(), "BaseAmount:", baseAmount.toString());
 
   try {
-    console.log("[recordTrade] Starting transaction...");
     const result = await db.$transaction(async (tx) => {
-      console.log("[recordTrade] Inside transaction, upserting position...");
       const position = await tx.position.upsert({
         where: {
           finAccountId_symbol: {
@@ -106,7 +94,6 @@ export async function recordTrade(
           unitKind: parsed.data.unitKind as "SHARES" | "TOKENS" | "LOTS",
         },
       });
-      console.log("[recordTrade] Position upserted:", position.id);
 
       const txn = await tx.transaction.create({
         data: {
@@ -121,7 +108,6 @@ export async function recordTrade(
           positionId: position.id,
         },
       });
-      console.log("[recordTrade] Transaction created:", txn.id);
 
       if (parsed.data.side === "BUY") {
         await tx.lot.create({
@@ -136,7 +122,6 @@ export async function recordTrade(
             acquiredDate: parsed.data.date,
           },
         });
-        console.log("[recordTrade] Lot created for BUY");
       } else {
         const openLots = await tx.lot.findMany({
           where: { positionId: position.id, side: "BUY", closedAt: null },
@@ -181,20 +166,15 @@ export async function recordTrade(
         });
       }
 
-      console.log("[recordTrade] Transaction complete, returning success");
       return { success: true };
     });
 
-    console.log("[recordTrade] Transaction result:", result);
     if (result.success) {
-      console.log("[recordTrade] Revalidating paths...");
       revalidatePath(`/app/${slug}/investments`);
       revalidatePath(`/app/${slug}/transactions`);
       revalidatePath(`/app/${slug}/dashboard`);
-      console.log("[recordTrade] Paths revalidated");
     }
 
-    console.log("[recordTrade] Returning result:", result);
     return result;
   } catch (error) {
     console.error("Trade recording error:", error);
