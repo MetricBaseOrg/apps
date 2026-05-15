@@ -35,7 +35,14 @@ export default async function RecurringPage({
 
   return (
     <RecurringContent
-      rules={rules.map((r) => ({ ...r, amount: r.amount.toString() }))}
+      rules={rules.map((r) => ({
+        ...r,
+        amount: r.amount.toString(),
+        finAccount: {
+          ...r.finAccount,
+          openingBalance: r.finAccount.openingBalance.toString(),
+        },
+      }))}
       dueRulesCount={dueCount}
       slug={slug}
       accounts={accounts}
