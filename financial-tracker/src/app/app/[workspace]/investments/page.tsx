@@ -125,7 +125,7 @@ export default async function InvestmentsPage({
                     {agg.position.symbol}
                   </td>
                   <td className="px-6 py-3 text-gray-2 text-xs">
-                    {agg.position.finAccount.name}
+                    {agg.position.finAccount?.name}
                   </td>
                   <td className="px-6 py-3 text-gray-2 text-xs">
                     {agg.position.unitKind.charAt(0) +
@@ -136,11 +136,11 @@ export default async function InvestmentsPage({
                   </td>
                   <td className="px-6 py-3 text-right text-white font-mono text-xs">
                     {agg.avgCostPerUnit.toString()}{" "}
-                    {agg.position.finAccount.currency}
+                    {agg.position.finAccount?.currency}
                   </td>
                   <td className="px-6 py-3 text-right text-white font-mono text-xs">
                     {agg.totalCostBasis.toString()}{" "}
-                    {agg.position.finAccount.currency}
+                    {agg.position.finAccount?.currency}
                   </td>
                   <td
                     className={`px-6 py-3 text-right font-mono text-xs ${
@@ -149,7 +149,7 @@ export default async function InvestmentsPage({
                   >
                     {agg.realizedPnL.isNegative() ? "−" : "+"}
                     {agg.realizedPnL.abs().toString()}{" "}
-                    {agg.position.finAccount.currency}
+                    {agg.position.finAccount?.currency}
                   </td>
                 </tr>
               ))}
