@@ -4,8 +4,8 @@ import { db } from "@/server/db";
 import type { DashboardPeriod } from "@/lib/periods";
 import { PERIOD_LABELS } from "@/lib/periods";
 
-export type SankeyNode = { name: string };
-export type SankeyLink = { source: number; target: number; value: number };
+export type SankeySource = { name: string; value: number; color: string };
+export type SankeySink = { name: string; value: number; color: string };
 
 export type DashboardSummary = {
   cashflowMtd: string; // baseCurrency
@@ -14,7 +14,7 @@ export type DashboardSummary = {
   monthOverMonth: number | null; // percent vs prior month cashflow
   cashflowByMonth: { month: string; income: number; expense: number }[];
   categoryBreakdown: { name: string; value: number; color: string | null }[];
-  sankey: { nodes: SankeyNode[]; links: SankeyLink[] };
+  sankey: { sources: SankeySource[]; sinks: SankeySink[] };
   recent: Awaited<ReturnType<typeof recentTxns>>;
 };
 
@@ -29,6 +29,10 @@ async function recentTxns(workspaceId: string) {
 
 export type { DashboardPeriod };
 export { PERIOD_LABELS };
+
+const INCOME_COLORS = ["#c9a84c", "#e5c168", "#d9b958", "#bfa44d", "#8a7434", "#a18838", "#6b5826", "#7b6630"];
+const EXPENSE_COLORS = ["#c9a84c", "#e5c168", "#8a7434", "#a18838", "#d9b958", "#bfa44d", "#6b5826", "#7b6630"];
+const INVEST_COLOR = "#4a9eff";
 
 function periodRange(period: DashboardPeriod): { rangeStart: Date; rangeEnd: Date; barMonths: number } {
   const now = new Date();
@@ -126,23 +130,35 @@ export async function buildDashboard(
     expense: Math.round(v.expense),
   }));
 
-  // Category breakdown MTD (expenses only)
+  // Category breakdown (expenses only, excluding investment transactions)
   const catAgg = await db.transaction.groupBy({
     by: ["categoryId"],
     where: {
       workspaceId,
       date: { gte: monthStart, lt: nextMonthStart },
       type: "EXPENSE",
+      positionId: null,
     },
     _sum: { baseAmount: true },
   });
+
+  const investAgg = await db.transaction.aggregate({
+    where: {
+      workspaceId,
+      date: { gte: monthStart, lt: nextMonthStart },
+      type: "EXPENSE",
+      positionId: { not: null },
+    },
+    _sum: { baseAmount: true },
+  });
+  const investTotal = new Decimal(investAgg._sum.baseAmount?.toString() ?? 0).toNumber();
   const categoryIds = catAgg.map((c) => c.categoryId).filter(Boolean) as string[];
   const cats = await db.category.findMany({
     where: { id: { in: categoryIds } },
     select: { id: true, name: true, color: true },
   });
   const byId = new Map(cats.map((c) => [c.id, c]));
-  const categoryBreakdown = catAgg
+  const rawBreakdown = catAgg
     .map((c) => ({
       name: c.categoryId
         ? byId.get(c.categoryId)?.name ?? "Uncategorized"
@@ -154,7 +170,16 @@ export async function buildDashboard(
     .sort((a, b) => b.value - a.value)
     .slice(0, 8);
 
-  // Sankey: income categories → [You] → expense categories (MTD)
+  if (investTotal > 0) {
+    rawBreakdown.unshift({ name: "Investments", value: investTotal, color: INVEST_COLOR });
+  }
+
+  const categoryBreakdown = rawBreakdown.map((c, i) => ({
+    ...c,
+    color: c.color ?? EXPENSE_COLORS[i % EXPENSE_COLORS.length],
+  }));
+
+  // Sankey: income sources → expense sinks (direct proportional flow)
   const incomeAgg = await db.transaction.groupBy({
     by: ["categoryId"],
     where: { workspaceId, date: { gte: monthStart, lt: nextMonthStart }, type: "INCOME" },
@@ -164,33 +189,27 @@ export async function buildDashboard(
   const incomeCats = await db.category.findMany({ where: { id: { in: incomeCatIds } }, select: { id: true, name: true } });
   const incomeCatMap = new Map(incomeCats.map((c) => [c.id, c.name]));
 
-  const incomeNodes: SankeyNode[] = incomeAgg
-    .filter((r) => new Decimal(r._sum.baseAmount?.toString() ?? 0).toNumber() > 0)
-    .map((r) => ({ name: r.categoryId ? incomeCatMap.get(r.categoryId) ?? "Income" : "Income" }));
-
-  const youIndex = incomeNodes.length;
-  const expenseNodes: SankeyNode[] = categoryBreakdown.map((c) => ({ name: c.name }));
-
-  const sankeyNodes: SankeyNode[] = [...incomeNodes, { name: "You" }, ...expenseNodes];
-
-  const incomeLinks: SankeyLink[] = incomeAgg
-    .filter((r) => new Decimal(r._sum.baseAmount?.toString() ?? 0).toNumber() > 0)
-    .map((r, i) => ({
-      source: i,
-      target: youIndex,
+  const sankeySourcesRaw = incomeAgg
+    .map((r) => ({
+      name: r.categoryId ? incomeCatMap.get(r.categoryId) ?? "Income" : "Income",
       value: Math.round(new Decimal(r._sum.baseAmount?.toString() ?? 0).toNumber()),
-    }));
+    }))
+    .filter((r) => r.value > 0);
 
-  const expenseLinks: SankeyLink[] = categoryBreakdown.map((c, i) => ({
-    source: youIndex,
-    target: youIndex + 1 + i,
-    value: Math.round(c.value),
+  const sources: SankeySource[] = sankeySourcesRaw.map((r, i) => ({
+    ...r,
+    color: INCOME_COLORS[i % INCOME_COLORS.length],
   }));
 
-  const sankey = {
-    nodes: sankeyNodes,
-    links: [...incomeLinks, ...expenseLinks].filter((l) => l.value > 0),
-  };
+  const sinks: SankeySink[] = categoryBreakdown
+    .filter((c) => c.value > 0)
+    .map((c) => ({
+      name: c.name,
+      value: Math.round(c.value),
+      color: c.color ?? EXPENSE_COLORS[0],
+    }));
+
+  const sankey = { sources, sinks };
 
   const recent = await recentTxns(workspaceId);
 

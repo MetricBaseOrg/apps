@@ -113,8 +113,8 @@ export default async function DashboardPage({
       <div className="mb-card p-6 flex flex-col gap-4">
         <Eyebrow>Money flow · {PERIOD_LABELS[period]}</Eyebrow>
         <SankeyChart
-          nodes={data.sankey.nodes}
-          links={data.sankey.links}
+          sources={data.sankey.sources}
+          sinks={data.sankey.sinks}
           currency={workspace.baseCurrency}
         />
       </div>

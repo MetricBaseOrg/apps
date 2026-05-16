@@ -255,3 +255,5 @@ body {
   background: var(--gold);
   color: var(--black);
 }
+
+.sankey-flow { transition: fill-opacity 150ms ease; }
