@@ -74,7 +74,7 @@ export function SankeyChart({
               fontFamily: "var(--font-mono)",
               fontSize: 11,
             }}
-            formatter={(value: number) => [fmt(value), ""]}
+            formatter={(value) => [fmt(Number(value)), ""]}
           />
         </Sankey>
       </ResponsiveContainer>
