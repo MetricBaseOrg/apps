@@ -1,10 +1,15 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Eyebrow } from "./Eyebrow";
 import { METRICBASE_LINKS } from "@/lib/constants";
 
 type Item = { href: string; label: string; external?: boolean };
 
 export function Sidebar({ workspaceSlug }: { workspaceSlug: string }) {
+  const pathname = usePathname();
+
   const sections: { title: string; items: Item[] }[] = [
     {
       title: "Books",
@@ -46,33 +51,42 @@ export function Sidebar({ workspaceSlug }: { workspaceSlug: string }) {
   ];
 
   return (
-    <aside className="hidden md:flex w-60 shrink-0 flex-col gap-8 border-r border-line bg-[var(--color-bg-elev)]/60 px-4 py-6 sticky top-16 self-start h-[calc(100vh-4rem)] overflow-y-auto">
+    <aside className="hidden md:flex w-56 shrink-0 flex-col gap-7 border-r border-line bg-[rgba(19,19,19,0.6)] px-3 py-6 overflow-y-auto">
       {sections.map((s) => (
-        <div key={s.title} className="flex flex-col gap-2">
-          <Eyebrow className="px-2">{s.title}</Eyebrow>
+        <div key={s.title} className="flex flex-col gap-1.5">
+          <Eyebrow className="no-tick px-2.5">{s.title}</Eyebrow>
           <nav className="flex flex-col gap-px">
-            {s.items.map((i) =>
-              i.external ? (
-                <a
-                  key={i.href}
-                  href={i.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-2 hover:text-gold hover:bg-[rgba(201,168,76,0.06)] px-2 py-2 transition-colors flex items-center justify-between"
-                >
-                  <span>{i.label}</span>
-                  <span className="text-gray-3 text-[9px]">↗</span>
-                </a>
-              ) : (
-                <Link
-                  key={i.href}
-                  href={i.href}
-                  className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-2 hover:text-gold hover:bg-[rgba(201,168,76,0.06)] px-2 py-2 transition-colors"
-                >
+            {s.items.map((i) => {
+              const active = !i.external && pathname.startsWith(i.href);
+              const linkClass = [
+                "font-mono text-[11px] uppercase tracking-[0.18em] px-2.5 py-2",
+                "flex items-center justify-between gap-2",
+                "border-l-2 transition-colors duration-150",
+                active
+                  ? "text-gold bg-[rgba(201,168,76,0.08)] border-l-gold"
+                  : "text-gray-2 border-l-transparent hover:text-gold hover:bg-[rgba(201,168,76,0.06)]",
+              ].join(" ");
+
+              if (i.external) {
+                return (
+                  <a
+                    key={i.href}
+                    href={i.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={linkClass}
+                  >
+                    <span>{i.label}</span>
+                    <span className="text-gray-3 text-[9px]">↗</span>
+                  </a>
+                );
+              }
+              return (
+                <Link key={i.href} href={i.href} className={linkClass}>
                   {i.label}
                 </Link>
-              ),
-            )}
+              );
+            })}
           </nav>
         </div>
       ))}
