@@ -13,6 +13,8 @@ export function Sidebar({ workspaceSlug }: { workspaceSlug: string }) {
         { href: `/app/${workspaceSlug}/transactions`, label: "Transactions" },
         { href: `/app/${workspaceSlug}/accounts`, label: "Accounts" },
         { href: `/app/${workspaceSlug}/budgets`, label: "Budgets" },
+        { href: `/app/${workspaceSlug}/recurring`, label: "Recurring" },
+        { href: `/app/${workspaceSlug}/investments`, label: "Investments" },
       ],
     },
     {
