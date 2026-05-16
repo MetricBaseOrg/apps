@@ -46,7 +46,7 @@ export function Sidebar({ workspaceSlug }: { workspaceSlug: string }) {
   ];
 
   return (
-    <aside className="hidden md:flex w-60 shrink-0 flex-col gap-8 border-r border-line bg-[var(--color-bg-elev)]/60 px-4 py-6">
+    <aside className="hidden md:flex w-60 shrink-0 flex-col gap-8 border-r border-line bg-[var(--color-bg-elev)]/60 px-4 py-6 sticky top-16 self-start h-[calc(100vh-4rem)] overflow-y-auto">
       {sections.map((s) => (
         <div key={s.title} className="flex flex-col gap-2">
           <Eyebrow className="px-2">{s.title}</Eyebrow>
