@@ -29,6 +29,9 @@ export const metadata: Metadata = {
   description:
     "Multi-entity financial tracking for individuals and companies. Built for the operator who reads their own books.",
   metadataBase: new URL("https://apps.metricbase.org"),
+  icons: {
+    icon: "https://metricbase.org/assets/favicon.ico",
+  },
 };
 
 export default function RootLayout({
