@@ -81,7 +81,10 @@ export default async function InvestmentsPage({
         </h1>
       </header>
 
-      <TradeForm slug={slug} accounts={accounts} />
+      <TradeForm
+        slug={slug}
+        accounts={accounts.map((a) => ({ ...a, openingBalance: a.openingBalance.toString() }))}
+      />
 
       {aggregatedPositions.length === 0 ? (
         <div className="mb-card p-6 text-center">
