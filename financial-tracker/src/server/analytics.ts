@@ -1,6 +1,8 @@
 import "server-only";
 import Decimal from "decimal.js";
 import { db } from "@/server/db";
+import type { DashboardPeriod } from "@/lib/periods";
+import { PERIOD_LABELS } from "@/lib/periods";
 
 export type SankeyNode = { name: string };
 export type SankeyLink = { source: number; target: number; value: number };
@@ -25,15 +27,8 @@ async function recentTxns(workspaceId: string) {
   });
 }
 
-export type DashboardPeriod = "mtd" | "3m" | "6m" | "ytd" | "1y";
-
-export const PERIOD_LABELS: Record<DashboardPeriod, string> = {
-  mtd: "This month",
-  "3m": "3 months",
-  "6m": "6 months",
-  ytd: "Year to date",
-  "1y": "12 months",
-};
+export type { DashboardPeriod };
+export { PERIOD_LABELS };
 
 function periodRange(period: DashboardPeriod): { rangeStart: Date; rangeEnd: Date; barMonths: number } {
   const now = new Date();

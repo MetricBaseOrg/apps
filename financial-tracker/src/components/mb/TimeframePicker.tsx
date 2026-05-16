@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import type { DashboardPeriod } from "@/server/analytics";
-import { PERIOD_LABELS } from "@/server/analytics";
+import type { DashboardPeriod } from "@/lib/periods";
+import { PERIOD_LABELS } from "@/lib/periods";
 
 const PERIODS = Object.keys(PERIOD_LABELS) as DashboardPeriod[];
 

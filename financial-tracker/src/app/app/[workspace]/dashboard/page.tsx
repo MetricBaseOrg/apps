@@ -8,8 +8,9 @@ import { CashflowBar } from "@/components/charts/CashflowBar";
 import { CategoryDonut } from "@/components/charts/CategoryDonut";
 import { SankeyChart } from "@/components/charts/SankeyChart";
 import { TimeframePicker } from "@/components/mb/TimeframePicker";
-import { buildDashboard, PERIOD_LABELS } from "@/server/analytics";
-import type { DashboardPeriod } from "@/server/analytics";
+import { buildDashboard } from "@/server/analytics";
+import { PERIOD_LABELS } from "@/lib/periods";
+import type { DashboardPeriod } from "@/lib/periods";
 
 const VALID_PERIODS = new Set(["mtd", "3m", "6m", "ytd", "1y"]);
 
