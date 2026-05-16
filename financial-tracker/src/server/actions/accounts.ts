@@ -40,7 +40,11 @@ const updateSchema = finAccountSchema.partial().extend({
   id: z.string().min(1),
 });
 
-export async function updateAccount(slug: string, formData: FormData) {
+export async function updateAccount(
+  slug: string,
+  _prev: AccountActionState | undefined,
+  formData: FormData,
+): Promise<AccountActionState> {
   const { workspace } = await requireMembership(slug);
   const parsed = updateSchema.safeParse({
     id: formData.get("id"),
@@ -52,13 +56,16 @@ export async function updateAccount(slug: string, formData: FormData) {
         ? formData.get("openingBalance")
         : undefined,
   });
-  if (!parsed.success) return;
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
   const { id, ...rest } = parsed.data;
   await db.finAccount.updateMany({
     where: { id, workspaceId: workspace.id },
     data: rest,
   });
   revalidatePath(`/app/${slug}/accounts`);
+  return {};
 }
 
 export async function archiveAccount(slug: string, id: string) {

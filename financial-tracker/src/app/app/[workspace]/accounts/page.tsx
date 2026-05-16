@@ -70,7 +70,7 @@ export default async function AccountsPage({
                   currency={a.currency}
                   className="text-white"
                 />
-                <AccountRowActions slug={slug} id={a.id} archived={false} />
+                <AccountRowActions slug={slug} id={a.id} archived={false} name={a.name} type={a.type} currency={a.currency} openingBalance={a.openingBalance.toString()} />
               </div>
               <div className="md:hidden px-4 py-4 flex flex-col gap-2">
                 <div className="flex justify-between items-start gap-3">
@@ -89,7 +89,7 @@ export default async function AccountsPage({
                   />
                 </div>
                 <div className="flex justify-end pt-1">
-                  <AccountRowActions slug={slug} id={a.id} archived={false} />
+                  <AccountRowActions slug={slug} id={a.id} archived={false} name={a.name} type={a.type} currency={a.currency} openingBalance={a.openingBalance.toString()} />
                 </div>
               </div>
             </div>
@@ -115,7 +115,7 @@ export default async function AccountsPage({
                     currency={a.currency}
                     className="text-gray-3"
                   />
-                  <AccountRowActions slug={slug} id={a.id} archived />
+                  <AccountRowActions slug={slug} id={a.id} archived name={a.name} type={a.type} currency={a.currency} openingBalance={a.openingBalance.toString()} />
                 </div>
                 <div className="md:hidden px-4 py-3 flex justify-between items-center gap-3">
                   <div className="flex flex-col min-w-0">
@@ -124,7 +124,7 @@ export default async function AccountsPage({
                       {a.type} · {a.currency}
                     </span>
                   </div>
-                  <AccountRowActions slug={slug} id={a.id} archived />
+                  <AccountRowActions slug={slug} id={a.id} archived name={a.name} type={a.type} currency={a.currency} openingBalance={a.openingBalance.toString()} />
                 </div>
               </div>
             ))}
