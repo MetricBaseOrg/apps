@@ -1,9 +1,8 @@
 import { requireMembership } from "@/server/workspace";
 import { db } from "@/server/db";
 import { Eyebrow } from "@/components/mb/Eyebrow";
-import { Money } from "@/components/mb/Money";
 import { CategoryCreateForm } from "./CategoryCreateForm";
-import { CategoryRowActions } from "./CategoryRowActions";
+import { CategoryRow } from "./CategoryRow";
 
 export default async function CategoriesPage({
   params,
@@ -88,22 +87,12 @@ function CategoryTable({
           </div>
         ) : (
           items.map((c) => (
-            <div
+            <CategoryRow
               key={c.id}
-              className="grid grid-cols-[1fr_80px_60px] sm:grid-cols-[1fr_140px_80px] gap-2 px-4 py-3 border-b border-line last:border-b-0 items-center hover:bg-[var(--color-bg-hover)] transition-colors"
-            >
-              <span className="font-sans text-white text-sm truncate">
-                {c.name}
-              </span>
-              <span className="mono text-xs text-gray-2 text-right sm:text-left">
-                {c.monthlyBudget ? (
-                  <Money value={c.monthlyBudget.toString()} currency={base} />
-                ) : (
-                  <span className="text-gray-3">—</span>
-                )}
-              </span>
-              <CategoryRowActions slug={slug} id={c.id} />
-            </div>
+              category={{ ...c, monthlyBudget: c.monthlyBudget?.toString() ?? null }}
+              slug={slug}
+              base={base}
+            />
           ))
         )}
       </div>

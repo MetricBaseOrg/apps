@@ -7,6 +7,7 @@ import { Money } from "@/components/mb/Money";
 import { TransactionCreateForm } from "./TransactionCreateForm";
 import { TransactionRowActions } from "./TransactionRowActions";
 import { TransactionFilters } from "./TransactionFilters";
+import { ImportCsvSection } from "./ImportCsvSection";
 
 const PAGE_SIZE = 50;
 
@@ -126,6 +127,12 @@ export default async function TransactionsPage({
           name: c.name,
           kind: c.kind,
         }))}
+      />
+
+      <ImportCsvSection
+        slug={slug}
+        accounts={accounts.map((a) => ({ name: a.name }))}
+        categories={categories.map((c) => ({ name: c.name, kind: c.kind }))}
       />
 
       <TransactionFilters

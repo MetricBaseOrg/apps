@@ -84,11 +84,13 @@ model Workspace {
   baseCurrency String        // "IDR" | "USD"
   createdAt    DateTime      @default(now())
 
-  memberships  Membership[]
-  finAccounts  FinAccount[]
-  categories   Category[]
-  transactions Transaction[]
-  tags         Tag[]
+  memberships      Membership[]
+  finAccounts      FinAccount[]
+  categories       Category[]
+  transactions     Transaction[]
+  tags             Tag[]
+  recurringRules   RecurringRule[]
+  positions        Position[]
 }
 
 model Membership {
@@ -125,9 +127,12 @@ model FinAccount {
   archivedAt    DateTime?
   createdAt      DateTime       @default(now())
 
-  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  txns        Transaction[] @relation("PrimaryAcct")
-  counterTxns Transaction[] @relation("CounterAcct")
+  workspace              Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  txns                   Transaction[]   @relation("PrimaryAcct")
+  counterTxns            Transaction[]   @relation("CounterAcct")
+  recurringRulesPrimary  RecurringRule[] @relation("RecurringPrimaryAcct")
+  recurringRulesCounter  RecurringRule[] @relation("RecurringCounterAcct")
+  positions              Position[]
 
   @@index([workspaceId])
 }
@@ -147,10 +152,11 @@ model Category {
   color         String?
   createdAt     DateTime     @default(now())
 
-  parent    Category?     @relation("CategoryTree", fields: [parentId], references: [id])
-  children  Category[]    @relation("CategoryTree")
-  workspace Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  txns      Transaction[]
+  parent           Category?      @relation("CategoryTree", fields: [parentId], references: [id])
+  children         Category[]     @relation("CategoryTree")
+  workspace        Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  txns             Transaction[]
+  recurringRules   RecurringRule[]
 
   @@index([workspaceId])
 }
@@ -161,12 +167,31 @@ enum TxnType {
   TRANSFER
 }
 
+enum RecurrenceFreq {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum TradeSide {
+  BUY
+  SELL
+}
+
+enum UnitKind {
+  SHARES
+  TOKENS
+  LOTS
+}
+
 model Transaction {
   id               String   @id @default(cuid())
   workspaceId      String
   finAccountId     String
   counterAccountId String?
   categoryId       String?
+  positionId       String?
   date             DateTime
   amount           Decimal  @db.Decimal(20, 4)
   currency         String
@@ -180,7 +205,9 @@ model Transaction {
   finAccount     FinAccount       @relation("PrimaryAcct", fields: [finAccountId], references: [id])
   counterAccount FinAccount?      @relation("CounterAcct", fields: [counterAccountId], references: [id])
   category       Category?        @relation(fields: [categoryId], references: [id])
+  position       Position?        @relation(fields: [positionId], references: [id])
   tags           TransactionTag[]
+  lot            Lot?
 
   @@index([workspaceId, date])
   @@index([workspaceId, categoryId, date])
@@ -217,4 +244,71 @@ model FxRate {
 
   @@unique([base, quote, date])
   @@index([date])
+}
+
+// ─── Phase 1: Recurring Transactions ────────────────────────────────────────
+
+model RecurringRule {
+  id               String          @id @default(cuid())
+  workspaceId      String
+  finAccountId     String
+  counterAccountId String?
+  categoryId       String?
+  type             TxnType
+  amount           Decimal         @db.Decimal(20, 4)
+  currency         String
+  memo             String?
+  freq             RecurrenceFreq
+  interval         Int             @default(1)
+  startDate        DateTime
+  nextRunDate      DateTime
+  endDate          DateTime?
+  lastPostedAt     DateTime?
+  createdAt        DateTime        @default(now())
+
+  workspace      Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  finAccount     FinAccount @relation("RecurringPrimaryAcct", fields: [finAccountId], references: [id], onDelete: Cascade)
+  counterAccount FinAccount? @relation("RecurringCounterAcct", fields: [counterAccountId], references: [id], onDelete: SetNull)
+  category       Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, nextRunDate])
+  @@index([workspaceId])
+}
+
+// ─── Phase 1: Investment Positions & Lots ───────────────────────────────────
+
+model Position {
+  id          String   @id @default(cuid())
+  workspaceId String
+  finAccountId String
+  symbol      String
+  unitKind    UnitKind @default(SHARES)
+  createdAt   DateTime @default(now())
+
+  workspace  Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  finAccount FinAccount    @relation(fields: [finAccountId], references: [id], onDelete: Cascade)
+  lots       Lot[]
+  txns       Transaction[]
+
+  @@unique([finAccountId, symbol])
+  @@index([workspaceId])
+}
+
+model Lot {
+  id            String    @id @default(cuid())
+  positionId    String
+  transactionId String    @unique
+  side          TradeSide
+  quantity      Decimal   @db.Decimal(20, 8)
+  unitCost      Decimal   @db.Decimal(20, 8)
+  fee           Decimal   @default(0) @db.Decimal(20, 4)
+  remainingQty  Decimal   @db.Decimal(20, 8)
+  acquiredDate  DateTime
+  closedAt      DateTime?
+  createdAt     DateTime  @default(now())
+
+  position    Position    @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([positionId])
 }

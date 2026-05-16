@@ -6,16 +6,27 @@ import { BunEmpty } from "@/components/mb/BunEmpty";
 import { Money } from "@/components/mb/Money";
 import { CashflowBar } from "@/components/charts/CashflowBar";
 import { CategoryDonut } from "@/components/charts/CategoryDonut";
+import { SankeyChart } from "@/components/charts/SankeyChart";
+import { TimeframePicker } from "@/components/mb/TimeframePicker";
 import { buildDashboard } from "@/server/analytics";
+import { PERIOD_LABELS } from "@/lib/periods";
+import type { DashboardPeriod } from "@/lib/periods";
+
+const VALID_PERIODS = new Set(["mtd", "3m", "6m", "ytd", "1y"]);
 
 export default async function DashboardPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ workspace: string }>;
+  searchParams: Promise<{ period?: string }>;
 }) {
   const { workspace: slug } = await params;
+  const { period: rawPeriod } = await searchParams;
+  const period: DashboardPeriod = VALID_PERIODS.has(rawPeriod ?? "") ? (rawPeriod as DashboardPeriod) : "mtd";
+
   const { workspace } = await requireMembership(slug);
-  const data = await buildDashboard(workspace.id);
+  const data = await buildDashboard(workspace.id, period);
 
   const cashflowSign = parseFloat(data.cashflowMtd) >= 0 ? "up" : "down";
   const momDelta =
@@ -31,19 +42,24 @@ export default async function DashboardPage({
 
   return (
     <div className="flex flex-col gap-8 max-w-[1240px]">
-      <header className="flex flex-col gap-2">
-        <Eyebrow>Dashboard · {workspace.type}</Eyebrow>
-        <h1 className="font-sans text-2xl sm:text-3xl font-extrabold text-white break-words">
-          {workspace.name}
-        </h1>
-        <p className="font-mono text-xs text-gray-3 uppercase tracking-[0.2em]">
-          Base · {workspace.baseCurrency}
-        </p>
+      <header className="flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex flex-col gap-2">
+            <Eyebrow>Dashboard · {workspace.type}</Eyebrow>
+            <h1 className="font-sans text-2xl sm:text-3xl font-extrabold text-white break-words">
+              {workspace.name}
+            </h1>
+            <p className="font-mono text-xs text-gray-3 uppercase tracking-[0.2em]">
+              Base · {workspace.baseCurrency}
+            </p>
+          </div>
+          <TimeframePicker current={period} />
+        </div>
       </header>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-[var(--color-line)]">
         <KpiCard
-          label="Cashflow · MTD"
+          label={`Cashflow · ${PERIOD_LABELS[period]}`}
           value={<Money value={data.cashflowMtd} currency={workspace.baseCurrency} />}
           delta={momDelta}
           deltaTone={momTone}
@@ -64,14 +80,14 @@ export default async function DashboardPage({
 
       <div className="grid md:grid-cols-[1.6fr_1fr] gap-px bg-[var(--color-line)]">
         <div className="mb-card p-6 flex flex-col gap-4">
-          <Eyebrow>Cashflow · last 6 months</Eyebrow>
+          <Eyebrow>Cashflow · {PERIOD_LABELS[period]}</Eyebrow>
           <CashflowBar
             data={data.cashflowByMonth}
             currency={workspace.baseCurrency}
           />
         </div>
         <div className="mb-card p-6 flex flex-col gap-4">
-          <Eyebrow>Expense mix · MTD</Eyebrow>
+          <Eyebrow>Expense mix · {PERIOD_LABELS[period]}</Eyebrow>
           <CategoryDonut
             data={data.categoryBreakdown}
             currency={workspace.baseCurrency}
@@ -92,6 +108,15 @@ export default async function DashboardPage({
             </ul>
           )}
         </div>
+      </div>
+
+      <div className="mb-card p-6 flex flex-col gap-4">
+        <Eyebrow>Money flow · {PERIOD_LABELS[period]}</Eyebrow>
+        <SankeyChart
+          sources={data.sankey.sources}
+          sinks={data.sankey.sinks}
+          currency={workspace.baseCurrency}
+        />
       </div>
 
       <div className="mb-card p-6 flex flex-col gap-4">

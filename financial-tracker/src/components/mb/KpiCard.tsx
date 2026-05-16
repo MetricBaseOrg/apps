@@ -23,11 +23,11 @@ export function KpiCard({
   return (
     <div className={cn("mb-card p-6 flex flex-col gap-3", className)}>
       <Eyebrow>{label}</Eyebrow>
-      <div className="font-sans text-3xl font-extrabold text-white mono">
+      <div className="font-mono tabular-nums text-[clamp(15px,1.8vw,22px)] font-bold text-white tracking-[-0.01em] overflow-hidden text-ellipsis whitespace-nowrap">
         {value}
       </div>
       {delta && (
-        <div className={cn("font-mono text-xs", toneClass)}>{delta}</div>
+        <div className={cn("font-mono text-[10px] tracking-[0.18em] uppercase", toneClass)}>{delta}</div>
       )}
     </div>
   );

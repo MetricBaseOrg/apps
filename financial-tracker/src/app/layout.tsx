@@ -42,9 +42,9 @@ export default function RootLayout({
       lang="en"
       className={`${manrope.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="mb-page min-h-full flex flex-col">
+      <body className="mb-page h-full flex flex-col">
         <GridBg />
-        <div className="relative z-10 flex flex-col min-h-screen">{children}</div>
+        <div className="relative z-10 flex-1 flex flex-col min-h-0">{children}</div>
       </body>
     </html>
   );
