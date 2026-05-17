@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/server/db";
 import { requireMembership } from "@/server/workspace";
+import { logAudit } from "@/server/audit";
 import { categorySchema } from "@/lib/schemas";
 
 export type CategoryActionState = { error?: string };
@@ -13,7 +14,7 @@ export async function createCategory(
   _prev: CategoryActionState | undefined,
   formData: FormData,
 ): Promise<CategoryActionState> {
-  const { workspace } = await requireMembership(slug);
+  const { user, workspace } = await requireMembership(slug);
   const parsed = categorySchema.safeParse({
     name: formData.get("name"),
     kind: formData.get("kind"),
@@ -23,7 +24,7 @@ export async function createCategory(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
-  await db.category.create({
+  const category = await db.category.create({
     data: {
       workspaceId: workspace.id,
       name: parsed.data.name,
@@ -31,6 +32,14 @@ export async function createCategory(
       monthlyBudget: parsed.data.monthlyBudget ?? undefined,
       color: parsed.data.color ?? undefined,
     },
+  });
+  await logAudit({
+    workspaceId: workspace.id,
+    userId: user.id,
+    action: "CREATE",
+    entityType: "CATEGORY",
+    entityId: category.id,
+    summary: `Created ${parsed.data.kind.toLowerCase()} category "${category.name}"`,
   });
   revalidatePath(`/app/${slug}/budgets`);
   revalidatePath(`/app/${slug}/settings/categories`);
@@ -48,7 +57,7 @@ const updateSchema = z.object({
 });
 
 export async function updateCategory(slug: string, formData: FormData) {
-  const { workspace } = await requireMembership(slug);
+  const { user, workspace } = await requireMembership(slug);
   const parsed = updateSchema.safeParse({
     id: formData.get("id"),
     name: formData.get("name") ?? undefined,
@@ -67,12 +76,20 @@ export async function updateCategory(slug: string, formData: FormData) {
       ...(monthlyBudget !== undefined ? { monthlyBudget } : {}),
     },
   });
+  await logAudit({
+    workspaceId: workspace.id,
+    userId: user.id,
+    action: "UPDATE",
+    entityType: "CATEGORY",
+    entityId: id,
+    summary: "Updated category",
+  });
   revalidatePath(`/app/${slug}/budgets`);
   revalidatePath(`/app/${slug}/settings/categories`);
 }
 
 export async function deleteCategory(slug: string, id: string) {
-  const { workspace } = await requireMembership(slug);
+  const { user, workspace } = await requireMembership(slug);
   // Prevent delete if used; otherwise hard delete
   const usage = await db.transaction.count({
     where: { workspaceId: workspace.id, categoryId: id },
@@ -83,6 +100,14 @@ export async function deleteCategory(slug: string, id: string) {
   }
   await db.category.deleteMany({
     where: { id, workspaceId: workspace.id },
+  });
+  await logAudit({
+    workspaceId: workspace.id,
+    userId: user.id,
+    action: "DELETE",
+    entityType: "CATEGORY",
+    entityId: id,
+    summary: "Deleted category",
   });
   revalidatePath(`/app/${slug}/budgets`);
   revalidatePath(`/app/${slug}/settings/categories`);

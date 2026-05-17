@@ -5,6 +5,7 @@ import { z } from "zod";
 import Decimal from "decimal.js";
 import { db } from "@/server/db";
 import { requireMembership } from "@/server/workspace";
+import { logAudit } from "@/server/audit";
 import { getFxRate } from "@/server/fx/provider";
 
 const baseSchema = z.object({
@@ -24,7 +25,7 @@ export async function createTransaction(
   _prev: TxnActionState | undefined,
   formData: FormData,
 ): Promise<TxnActionState> {
-  const { workspace } = await requireMembership(slug);
+  const { user, workspace } = await requireMembership(slug);
   const parsed = baseSchema.safeParse({
     date: formData.get("date"),
     type: formData.get("type"),
@@ -72,7 +73,7 @@ export async function createTransaction(
   const amount = new Decimal(input.amount);
   const baseAmount = amount.times(fxRate);
 
-  await db.transaction.create({
+  const created = await db.transaction.create({
     data: {
       workspaceId: workspace.id,
       finAccountId: primary.id,
@@ -89,15 +90,31 @@ export async function createTransaction(
     },
   });
 
+  await logAudit({
+    workspaceId: workspace.id,
+    userId: user.id,
+    action: "CREATE",
+    entityType: "TRANSACTION",
+    entityId: created.id,
+    summary: `${input.type} ${amount.toString()} ${primary.currency}`,
+  });
   revalidatePath(`/app/${slug}/transactions`);
   revalidatePath(`/app/${slug}/dashboard`);
   return {};
 }
 
 export async function deleteTransaction(slug: string, id: string) {
-  const { workspace } = await requireMembership(slug);
+  const { user, workspace } = await requireMembership(slug);
   await db.transaction.deleteMany({
     where: { id, workspaceId: workspace.id },
+  });
+  await logAudit({
+    workspaceId: workspace.id,
+    userId: user.id,
+    action: "DELETE",
+    entityType: "TRANSACTION",
+    entityId: id,
+    summary: "Deleted transaction",
   });
   revalidatePath(`/app/${slug}/transactions`);
   revalidatePath(`/app/${slug}/dashboard`);
@@ -109,7 +126,7 @@ export async function updateTransaction(
   _prev: TxnActionState | undefined,
   formData: FormData,
 ): Promise<TxnActionState> {
-  const { workspace } = await requireMembership(slug);
+  const { user, workspace } = await requireMembership(slug);
   const existing = await db.transaction.findFirst({
     where: { id, workspaceId: workspace.id },
   });
@@ -175,6 +192,14 @@ export async function updateTransaction(
     },
   });
 
+  await logAudit({
+    workspaceId: workspace.id,
+    userId: user.id,
+    action: "UPDATE",
+    entityType: "TRANSACTION",
+    entityId: id,
+    summary: `Updated transaction (${input.type} ${amount.toString()} ${primary.currency})`,
+  });
   revalidatePath(`/app/${slug}/transactions`);
   revalidatePath(`/app/${slug}/dashboard`);
   return {};

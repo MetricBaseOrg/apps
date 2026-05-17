@@ -18,9 +18,12 @@ model User {
   emailVerified DateTime?
   createdAt     DateTime     @default(now())
 
-  accounts      Account[]
-  sessions      Session[]
-  memberships   Membership[]
+  accounts        Account[]
+  sessions        Session[]
+  memberships     Membership[]
+  invitesCreated  WorkspaceInvite[] @relation("InvitesCreated")
+  invitesAccepted WorkspaceInvite[] @relation("InvitesAccepted")
+  auditLogs       AuditLog[]        @relation("AuditLogs")
 }
 
 model Account {

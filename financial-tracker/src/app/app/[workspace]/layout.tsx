@@ -1,4 +1,5 @@
 import { requireMembership, getCurrentUserWorkspaces } from "@/server/workspace";
+import { buildAlerts } from "@/server/analytics";
 import { AppTopbar } from "@/components/mb/AppTopbar";
 import { Sidebar } from "@/components/mb/Sidebar";
 
@@ -11,7 +12,10 @@ export default async function WorkspaceLayout({
 }) {
   const { workspace: slug } = await params;
   const { workspace, user } = await requireMembership(slug);
-  const memberships = await getCurrentUserWorkspaces();
+  const [memberships, alerts] = await Promise.all([
+    getCurrentUserWorkspaces(),
+    buildAlerts(workspace.id),
+  ]);
 
   const workspaces = memberships.map((m) => ({
     slug: m.workspace.slug,
@@ -31,6 +35,7 @@ export default async function WorkspaceLayout({
         }}
         workspaces={workspaces}
         userEmail={user.email}
+        alertCount={alerts.length}
       />
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <Sidebar workspaceSlug={workspace.slug} />

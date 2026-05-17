@@ -16,10 +16,12 @@ export function AppTopbar({
   current,
   workspaces,
   userEmail,
+  alertCount = 0,
 }: {
   current: Item;
   workspaces: Item[];
   userEmail?: string | null;
+  alertCount?: number;
 }) {
   return (
     <header className="shrink-0 z-40 border-b border-line bg-[rgba(19,19,19,0.94)] backdrop-blur-[10px]">

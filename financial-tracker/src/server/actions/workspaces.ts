@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/server/db";
 import { requireMembership, requireUser, slugify } from "@/server/workspace";
+import { logAudit } from "@/server/audit";
 import {
   DEFAULT_COMPANY_CATEGORIES,
   DEFAULT_INDIVIDUAL_CATEGORIES,
@@ -66,6 +67,14 @@ export async function createWorkspace(
     },
   });
 
+  await logAudit({
+    workspaceId: workspace.id,
+    userId: user.id,
+    action: "CREATE",
+    entityType: "WORKSPACE",
+    entityId: workspace.id,
+    summary: `Created workspace "${workspace.name}"`,
+  });
   revalidatePath("/app");
   redirect(`/app/${workspace.slug}/dashboard`);
 }
@@ -83,7 +92,7 @@ export async function updateWorkspace(
   _prev: UpdateWorkspaceState | undefined,
   formData: FormData,
 ): Promise<UpdateWorkspaceState> {
-  const { workspace } = await requireMembership(slug);
+  const { user, workspace } = await requireMembership(slug);
   const parsed = updateWorkspaceSchema.safeParse({
     name: formData.get("name"),
     type: formData.get("type"),
@@ -118,6 +127,14 @@ export async function updateWorkspace(
         ? { baseCurrency: parsed.data.baseCurrency }
         : {}),
     },
+  });
+  await logAudit({
+    workspaceId: workspace.id,
+    userId: user.id,
+    action: "UPDATE",
+    entityType: "WORKSPACE",
+    entityId: workspace.id,
+    summary: `Updated workspace settings`,
   });
   revalidatePath(`/app/${slug}`);
   revalidatePath(`/app/${slug}/settings/workspace`);

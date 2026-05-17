@@ -266,3 +266,33 @@ export async function buildBudgets(workspaceId: string): Promise<BudgetRow[]> {
     actual: byId.get(c.id) ?? 0,
   }));
 }
+
+export type BudgetAlert = {
+  categoryId: string;
+  name: string;
+  budget: number;
+  actual: number;
+  overBy: number;
+};
+
+// Computed-only (no persistence). Surfaces EXPENSE categories whose MTD spend
+// exceeds their monthly budget.
+export async function buildAlerts(workspaceId: string): Promise<BudgetAlert[]> {
+  const rows = await buildBudgets(workspaceId);
+  return rows
+    .filter(
+      (r) =>
+        r.kind === "EXPENSE" &&
+        r.budget !== null &&
+        r.budget > 0 &&
+        r.actual > r.budget,
+    )
+    .map((r) => ({
+      categoryId: r.id,
+      name: r.name,
+      budget: r.budget as number,
+      actual: r.actual,
+      overBy: r.actual - (r.budget as number),
+    }))
+    .sort((a, b) => b.overBy - a.overBy);
+}
