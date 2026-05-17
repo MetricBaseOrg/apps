@@ -40,6 +40,14 @@ function periodRange(period: DashboardPeriod): { rangeStart: Date; rangeEnd: Dat
   switch (period) {
     case "mtd":
       return { rangeStart: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)), rangeEnd, barMonths: 1 };
+    case "qtd": {
+      const qStartMonth = now.getUTCMonth() - (now.getUTCMonth() % 3);
+      return {
+        rangeStart: new Date(Date.UTC(now.getUTCFullYear(), qStartMonth, 1)),
+        rangeEnd,
+        barMonths: now.getUTCMonth() - qStartMonth + 1,
+      };
+    }
     case "3m":
       return { rangeStart: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 2, 1)), rangeEnd, barMonths: 3 };
     case "6m":

@@ -12,7 +12,7 @@ import { buildDashboard, buildAlerts } from "@/server/analytics";
 import { PERIOD_LABELS } from "@/lib/periods";
 import type { DashboardPeriod } from "@/lib/periods";
 
-const VALID_PERIODS = new Set(["mtd", "3m", "6m", "ytd", "1y"]);
+const VALID_PERIODS = new Set(["mtd", "qtd", "3m", "6m", "ytd", "1y"]);
 
 export default async function DashboardPage({
   params,
