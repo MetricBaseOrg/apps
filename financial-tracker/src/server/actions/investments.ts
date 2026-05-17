@@ -181,3 +181,25 @@ export async function recordTrade(
     return { error: "Failed to record trade. Please try again." };
   }
 }
+
+export type InvestmentActionState = InvestmentState;
+
+export async function recordBuy(slug: string, _prev: InvestmentActionState | undefined, formData: FormData): Promise<InvestmentActionState> {
+  return { error: "Not implemented. Use recordTrade instead." };
+}
+
+export async function recordSell(slug: string, _prev: InvestmentActionState | undefined, formData: FormData): Promise<InvestmentActionState> {
+  return { error: "Not implemented. Use recordTrade instead." };
+}
+
+export async function recordDividend(slug: string, _prev: InvestmentActionState | undefined, formData: FormData): Promise<InvestmentActionState> {
+  return { error: "Not implemented. Use recordTrade instead." };
+}
+
+export async function updatePositionPrice(slug: string, _prev: InvestmentActionState | undefined, formData: FormData): Promise<InvestmentActionState> {
+  return { error: "Not implemented. Use recordTrade instead." };
+}
+
+export async function closePosition(slug: string, positionId: string): Promise<InvestmentActionState> {
+  return { error: "Not implemented. Use recordTrade instead." };
+}
