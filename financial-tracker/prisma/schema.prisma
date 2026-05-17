@@ -94,6 +94,8 @@ model Workspace {
   tags             Tag[]
   recurringRules   RecurringRule[]
   positions        Position[]
+  invites          WorkspaceInvite[]
+  auditLogs        AuditLog[]
 }
 
 model Membership {
@@ -314,4 +316,50 @@ model Lot {
   transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
 
   @@index([positionId])
+}
+
+// ─── Phase 1: Workspace Invites & Audit Logs ────────────────────────────────
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model WorkspaceInvite {
+  id          String       @id @default(cuid())
+  email       String
+  workspaceId String
+  inviterId   String
+  inviteeId   String?
+  role        Role         @default(MEMBER)
+  token       String       @unique
+  status      InviteStatus @default(PENDING)
+  expiresAt   DateTime
+  createdAt   DateTime     @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  inviter   User      @relation("InvitesCreated", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee   User?     @relation("InvitesAccepted", fields: [inviteeId], references: [id], onDelete: SetNull)
+
+  @@unique([email, workspaceId])
+  @@index([workspaceId])
+  @@index([token])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  workspaceId String?
+  userId      String
+  action      String
+  entityId    String?
+  entityType  String?
+  details     String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  user        User       @relation("AuditLogs", fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@index([userId])
 }
