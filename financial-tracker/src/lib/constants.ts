@@ -15,8 +15,11 @@ export const METRICBASE_LINKS = {
 export const SUPPORTED_CURRENCIES = ["IDR", "USD"] as const;
 export type Currency = (typeof SUPPORTED_CURRENCIES)[number];
 
+export const INVITE_TTL_DAYS = 7;
+export const DIVIDEND_CATEGORY_NAME = "Dividends";
+
 export const DEFAULT_INDIVIDUAL_CATEGORIES = {
-  income: ["Salary", "Freelance", "Investments", "Other Income"],
+  income: ["Salary", "Freelance", "Investments", "Dividends", "Other Income"],
   expense: [
     "Housing",
     "Food",
@@ -30,7 +33,7 @@ export const DEFAULT_INDIVIDUAL_CATEGORIES = {
 };
 
 export const DEFAULT_COMPANY_CATEGORIES = {
-  income: ["Revenue", "Service Fees", "Interest Income", "Other Income"],
+  income: ["Revenue", "Service Fees", "Interest Income", "Dividends", "Other Income"],
   expense: [
     "Payroll",
     "Rent",

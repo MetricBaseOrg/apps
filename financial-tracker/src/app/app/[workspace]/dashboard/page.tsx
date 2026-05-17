@@ -6,7 +6,7 @@ import { BunEmpty } from "@/components/mb/BunEmpty";
 import { Money } from "@/components/mb/Money";
 import { CashflowBar } from "@/components/charts/CashflowBar";
 import { CategoryDonut } from "@/components/charts/CategoryDonut";
-import { buildDashboard } from "@/server/analytics";
+import { buildDashboard, buildAlerts } from "@/server/analytics";
 
 export default async function DashboardPage({
   params,
@@ -15,7 +15,10 @@ export default async function DashboardPage({
 }) {
   const { workspace: slug } = await params;
   const { workspace } = await requireMembership(slug);
-  const data = await buildDashboard(workspace.id);
+  const [data, alerts] = await Promise.all([
+    buildDashboard(workspace.id),
+    buildAlerts(workspace.id),
+  ]);
 
   const cashflowSign = parseFloat(data.cashflowMtd) >= 0 ? "up" : "down";
   const momDelta =
@@ -40,6 +43,30 @@ export default async function DashboardPage({
           Base · {workspace.baseCurrency}
         </p>
       </header>
+
+      {alerts.length > 0 && (
+        <Link
+          href={`/app/${slug}/notifications`}
+          className="mb-card p-4 border-l-2 border-l-[var(--color-down)] flex items-center justify-between gap-4 hover:bg-[var(--color-bg-hover)] transition-colors"
+        >
+          <div className="flex flex-col gap-1 min-w-0">
+            <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[var(--color-down)]">
+              {alerts.length} budget {alerts.length === 1 ? "alert" : "alerts"}
+            </span>
+            <span className="font-sans text-sm text-white truncate">
+              {alerts
+                .slice(0, 3)
+                .map((a) => a.name)
+                .join(", ")}
+              {alerts.length > 3 ? ` +${alerts.length - 3} more` : ""} over
+              budget
+            </span>
+          </div>
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold shrink-0">
+            View →
+          </span>
+        </Link>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-[var(--color-line)]">
         <KpiCard

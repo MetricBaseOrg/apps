@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/server/db";
 import { requireMembership } from "@/server/workspace";
+import { logAudit } from "@/server/audit";
 
 const overrideSchema = z.object({
   base: z.enum(["IDR", "USD"]),
@@ -19,7 +20,7 @@ export async function upsertFxOverride(
   _prev: FxActionState | undefined,
   formData: FormData,
 ): Promise<FxActionState> {
-  await requireMembership(slug); // gated; FX is workspace-agnostic but require auth
+  const { user, workspace } = await requireMembership(slug); // gated; FX is workspace-agnostic but require auth
   const parsed = overrideSchema.safeParse({
     base: formData.get("base"),
     quote: formData.get("quote"),
@@ -59,12 +60,28 @@ export async function upsertFxOverride(
       source: "manual",
     },
   });
+  await logAudit({
+    workspaceId: workspace.id,
+    userId: user.id,
+    action: "UPDATE",
+    entityType: "FX_RATE",
+    entityId: `${parsed.data.base}_${parsed.data.quote}`,
+    summary: `Set FX override ${parsed.data.base}→${parsed.data.quote} = ${parsed.data.rate}`,
+  });
   revalidatePath(`/app/${slug}/settings/fx`);
   return {};
 }
 
 export async function deleteFxOverride(slug: string, id: string) {
-  await requireMembership(slug);
+  const { user, workspace } = await requireMembership(slug);
   await db.fxRate.deleteMany({ where: { id } });
+  await logAudit({
+    workspaceId: workspace.id,
+    userId: user.id,
+    action: "DELETE",
+    entityType: "FX_RATE",
+    entityId: id,
+    summary: "Deleted FX override",
+  });
   revalidatePath(`/app/${slug}/settings/fx`);
 }

@@ -138,6 +138,57 @@ async function main() {
     }
   }
 
+  // Investments demo (idempotent): a brokerage account + one position with
+  // two FIFO lots and a dividend in the personal workspace.
+  let brokerage = await db.finAccount.findFirst({
+    where: { workspaceId: personal.id, type: "BROKERAGE" },
+  });
+  if (!brokerage) {
+    brokerage = await db.finAccount.create({
+      data: {
+        workspaceId: personal.id,
+        name: "IBKR Brokerage",
+        type: "BROKERAGE",
+        currency: "USD",
+        openingBalance: "10000",
+      },
+    });
+  }
+  let position = await db.investmentPosition.findFirst({
+    where: { workspaceId: personal.id, symbol: "AAPL" },
+  });
+  if (!position) {
+    position = await db.investmentPosition.create({
+      data: {
+        workspaceId: personal.id,
+        finAccountId: brokerage.id,
+        symbol: "AAPL",
+        name: "Apple Inc.",
+        currency: "USD",
+        lastPrice: "210",
+        lastPriceAt: new Date(),
+      },
+    });
+    await db.investmentLot.createMany({
+      data: [
+        {
+          positionId: position.id,
+          quantity: "10",
+          remainingQuantity: "10",
+          costPerUnit: "150",
+          acquiredAt: new Date(Date.now() - 120 * 86_400_000),
+        },
+        {
+          positionId: position.id,
+          quantity: "5",
+          remainingQuantity: "5",
+          costPerUnit: "180",
+          acquiredAt: new Date(Date.now() - 40 * 86_400_000),
+        },
+      ],
+    });
+  }
+
   console.log("✓ Seed complete");
   console.log(`  User: ${user.email}`);
   console.log(`  Workspaces: ${personal.slug}, ${company.slug}`);

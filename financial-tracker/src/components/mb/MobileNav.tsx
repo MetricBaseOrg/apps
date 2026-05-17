@@ -66,6 +66,14 @@ export function MobileNav({ workspaceSlug }: { workspaceSlug: string }) {
           label: "Categories",
         },
         { href: `/app/${workspaceSlug}/settings/fx`, label: "FX Rates" },
+        {
+          href: `/app/${workspaceSlug}/settings/members`,
+          label: "Members",
+        },
+        {
+          href: `/app/${workspaceSlug}/settings/activity`,
+          label: "Activity",
+        },
         { href: `/app/profile`, label: "Profile" },
       ],
     },

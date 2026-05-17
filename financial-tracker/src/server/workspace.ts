@@ -1,5 +1,6 @@
 import "server-only";
 import { redirect } from "next/navigation";
+import type { Role } from "@prisma/client";
 import { auth } from "@/server/auth";
 import { db } from "@/server/db";
 
@@ -29,6 +30,31 @@ export async function requireMembership(slug: string) {
   if (!membership) redirect("/app");
 
   return { user, workspace, membership };
+}
+
+// Phase 2 deliberately gates ONLY member/invite/audit management to
+// OWNER/ADMIN. A full RBAC sweep across accounts/transactions/etc. is
+// intentionally out of scope for this phase.
+export async function requireRole(slug: string, allowed: Role[]) {
+  const ctx = await requireMembership(slug);
+  if (!allowed.includes(ctx.membership.role)) {
+    redirect(`/app/${slug}/dashboard`);
+  }
+  return ctx;
+}
+
+// Returns true when the given membership is the workspace's only OWNER, so
+// callers can block role downgrades / removals that would orphan it.
+export async function isSoleOwner(
+  workspaceId: string,
+  membershipId: string,
+): Promise<boolean> {
+  const m = await db.membership.findUnique({ where: { id: membershipId } });
+  if (!m || m.workspaceId !== workspaceId || m.role !== "OWNER") return false;
+  const ownerCount = await db.membership.count({
+    where: { workspaceId, role: "OWNER" },
+  });
+  return ownerCount <= 1;
 }
 
 export function slugify(name: string) {
