@@ -1,6 +1,6 @@
 # MetricBase Financial Tracker
 
-Multi-tenant financial tracker for individuals and companies. Multi-currency (IDR/USD), multi-workspace, full P&L + balance sheet, CSV import/export, investment positions, recurring transactions.
+Multi-tenant financial tracker for individuals and companies. Multi-currency (IDR/USD), multi-workspace, full P&L + balance sheet, CSV import/export, investment positions + lots + dividends, recurring transactions, workspace invites, audit log.
 
 - **Stack:** Next.js 16 (App Router) · TypeScript · Tailwind v4 · Prisma 7 + Neon · Auth.js v5 · custom SVG charts · pdf-lib · decimal.js
 - **Deploy:** Vercel → `apps.metricbase.org`
@@ -46,7 +46,11 @@ Open <http://localhost:3000>.
 | `/app/[ws]/budgets` | Per-category monthly budgets + progress |
 | `/app/[ws]/reports/{pnl,balance-sheet}` | Reports + PDF export |
 | `/app/[ws]/settings/{workspace,categories,fx}` | Settings · inline category editing |
+| `/app/[ws]/settings/members` | Invite management + member role/remove |
+| `/app/[ws]/settings/activity` | Audit log with filters |
+| `/app/[ws]/notifications` | In-app notifications |
 | `/app/profile` | Profile picture + display name |
+| `/invite/[token]` | Workspace invite accept |
 | `/api/auth/[...nextauth]` | Auth handlers |
 | `/api/export/{csv,pdf}` | Streaming exports |
 | `/api/fx/refresh` | Daily Frankfurter FX snapshot (cron) |
@@ -102,6 +106,16 @@ Open <http://localhost:3000>.
 | Custom Sankey flow chart | ✓ |
 | MetricBase design system | ✓ |
 
-### Phase 2 — planned
+### Phase 2 — complete
 
-Bank feeds (Plaid/Brick), OCR receipts, team invites UI, Stripe billing, audit log, public API, alerts, more currencies.
+| Feature | Status |
+| --- | --- |
+| Workspace invites (token-based, role-scoped) | ✓ |
+| Member management (role change, remove) | ✓ |
+| Audit log (all create/update/delete/invest events) | ✓ |
+| Investment positions + lots + dividends (v2 model) | ✓ |
+| Notifications page | ✓ |
+
+### Phase 3 — planned
+
+Bank feeds (Plaid/Brick), OCR receipts, Stripe billing, public API, price alerts, more currencies.

@@ -43,6 +43,16 @@ export default function RootLayout({
       className={`${manrope.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="mb-page h-full flex flex-col">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const stored = localStorage.getItem('mb-theme');
+                if (stored === 'light') document.documentElement.setAttribute('data-theme', 'light');
+              } catch (e) {}
+            `,
+          }}
+        />
         <GridBg />
         <div className="relative z-10 flex-1 flex flex-col min-h-0">{children}</div>
       </body>

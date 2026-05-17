@@ -54,7 +54,7 @@ export function Sidebar({ workspaceSlug }: { workspaceSlug: string }) {
   ];
 
   return (
-    <aside className="hidden md:flex w-56 shrink-0 flex-col gap-7 border-r border-line bg-[rgba(19,19,19,0.6)] px-3 py-6 overflow-y-auto">
+    <aside className="hidden md:flex w-56 shrink-0 flex-col gap-7 border-r border-line bg-sidebar-bg px-3 py-6 overflow-y-auto">
       {sections.map((s) => (
         <div key={s.title} className="flex flex-col gap-1.5">
           <Eyebrow className="no-tick px-2.5">{s.title}</Eyebrow>
@@ -66,8 +66,8 @@ export function Sidebar({ workspaceSlug }: { workspaceSlug: string }) {
                 "flex items-center justify-between gap-2",
                 "border-l-2 transition-colors duration-150",
                 active
-                  ? "text-gold bg-[rgba(201,168,76,0.08)] border-l-gold"
-                  : "text-gray-2 border-l-transparent hover:text-gold hover:bg-[rgba(201,168,76,0.06)]",
+                  ? "text-gold bg-tint-gold-soft border-l-gold"
+                  : "text-gray-2 border-l-transparent hover:text-gold hover:bg-tint-gold-hover",
               ].join(" ");
 
               if (i.external) {

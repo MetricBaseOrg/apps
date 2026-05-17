@@ -2,6 +2,7 @@ import Link from "next/link";
 import { NavDiamond } from "./NavDiamond";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { MobileNav } from "./MobileNav";
+import { ThemeToggle } from "./ThemeToggle";
 import { signOutAction } from "@/server/actions/auth";
 import type { WorkspaceType } from "@prisma/client";
 
@@ -24,7 +25,7 @@ export function AppTopbar({
   alertCount?: number;
 }) {
   return (
-    <header className="shrink-0 z-40 border-b border-line bg-[rgba(19,19,19,0.94)] backdrop-blur-[10px]">
+    <header className="shrink-0 z-40 border-b border-line bg-topbar-bg backdrop-blur-[10px]">
       <div className="flex h-16 items-center justify-between gap-3 px-4 md:px-6">
 
         {/* Brand + workspace switcher */}
@@ -58,6 +59,7 @@ export function AppTopbar({
 
         {/* Right side */}
         <div className="flex items-center gap-4 md:gap-5">
+          <ThemeToggle />
           {userEmail && (
             <Link
               href="/app/profile"

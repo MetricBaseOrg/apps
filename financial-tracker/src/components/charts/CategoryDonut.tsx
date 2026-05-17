@@ -8,7 +8,7 @@ import {
   Tooltip,
 } from "recharts";
 
-const GOLD_RAMP = [
+export const GOLD_RAMP = [
   "#c9a84c",
   "#e5c168",
   "#8a7434",

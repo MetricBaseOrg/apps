@@ -2,22 +2,26 @@
 
 @theme {
   /* ── PALETTE ── */
-  --color-black: #0a0a0a;
-  --color-bg-elev: #131313;
-  --color-bg-card: #161616;
-  --color-bg-hover: #1c1c1c;
-  --color-gold: #c9a84c;
-  --color-gold-bright: #e5c168;
-  --color-gold-dim: #8a7434;
-  --color-white: #ffffff;
-  --color-gray-1: #e5e5e5;
-  --color-gray-2: #999999;
-  --color-gray-3: #555555;
-  --color-gray-4: #2a2a2a;
-  --color-line: rgba(255, 255, 255, 0.06);
-  --color-line-strong: rgba(201, 168, 76, 0.3);
-  --color-up: #2faf65;
-  --color-down: #d4524a;
+  --color-black: var(--black);
+  --color-bg-elev: var(--bg-elev);
+  --color-bg-card: var(--bg-card);
+  --color-bg-hover: var(--bg-hover);
+  --color-gold: var(--gold);
+  --color-gold-bright: var(--gold-bright);
+  --color-gold-dim: var(--gold-dim);
+  --color-white: var(--white);
+  --color-gray-1: var(--gray-1);
+  --color-gray-2: var(--gray-2);
+  --color-gray-3: var(--gray-3);
+  --color-gray-4: var(--gray-4);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-topbar-bg: var(--topbar-bg);
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-tint-gold-soft: var(--tint-gold-soft);
+  --color-tint-gold-hover: var(--tint-gold-hover);
 
   /* ── FONTS ── */
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
@@ -52,8 +56,33 @@
   --gray-4: #2a2a2a;
   --line: rgba(255, 255, 255, 0.06);
   --line-strong: rgba(201, 168, 76, 0.3);
-  --up: #2faf65;
   --down: #d4524a;
+  --grid-line: rgba(255, 255, 255, 0.015);
+  --topbar-bg: rgba(19, 19, 19, 0.94);
+  --sidebar-bg: rgba(19, 19, 19, 0.6);
+  --tint-gold-soft: rgba(201, 168, 76, 0.08);
+  --tint-gold-hover: rgba(201, 168, 76, 0.06);
+}
+
+html[data-theme="light"] {
+  --black: #f8f8f8;
+  --bg-elev: #ffffff;
+  --bg-card: #ffffff;
+  --bg-hover: #f0f0f0;
+  --white: #111111;
+  --gray-1: #333333;
+  --gray-2: #666666;
+  --gray-3: #999999;
+  --gray-4: #e5e5e5;
+  --line: rgba(0, 0, 0, 0.08);
+  --line-strong: rgba(201, 168, 76, 0.4);
+  --up: #22a058;
+  --down: #d4524a;
+  --grid-line: rgba(0, 0, 0, 0.03);
+  --topbar-bg: rgba(255, 255, 255, 0.94);
+  --sidebar-bg: rgba(250, 250, 250, 0.8);
+  --tint-gold-soft: rgba(201, 168, 76, 0.08);
+  --tint-gold-hover: rgba(201, 168, 76, 0.06);
 }
 
 html,
@@ -81,8 +110,8 @@ body {
   pointer-events: none;
   z-index: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 48px 48px;
 }
 

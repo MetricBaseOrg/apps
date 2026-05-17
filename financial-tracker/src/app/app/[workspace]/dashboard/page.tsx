@@ -5,7 +5,7 @@ import { KpiCard } from "@/components/mb/KpiCard";
 import { BunEmpty } from "@/components/mb/BunEmpty";
 import { Money } from "@/components/mb/Money";
 import { CashflowBar } from "@/components/charts/CashflowBar";
-import { CategoryDonut } from "@/components/charts/CategoryDonut";
+import { CategoryDonut, GOLD_RAMP } from "@/components/charts/CategoryDonut";
 import { SankeyChart } from "@/components/charts/SankeyChart";
 import { BalanceLineChart } from "@/components/charts/BalanceLineChart";
 import { TimeframePicker } from "@/components/mb/TimeframePicker";
@@ -140,13 +140,13 @@ export default async function DashboardPage({
           />
           {data.categoryBreakdown.length > 0 && (
             <ul className="flex flex-col gap-1 mt-2">
-              {data.categoryBreakdown.slice(0, 5).map((c) => (
+              {data.categoryBreakdown.slice(0, 5).map((c, i) => (
                 <li
                   key={c.name}
                   className="flex justify-between items-center text-xs font-mono"
                 >
                   <span className="text-gray-2 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color || '#ef4444' }} />
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color || GOLD_RAMP[i % GOLD_RAMP.length] }} />
                     {c.name}
                   </span>
                   <span className="text-white mono">

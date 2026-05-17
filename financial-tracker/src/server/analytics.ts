@@ -209,7 +209,7 @@ export async function buildDashboard(
 
   const categoryBreakdown = rawBreakdown.map((c, i) => ({
     ...c,
-    color: c.color ?? EXPENSE_COLORS[i % EXPENSE_COLORS.length],
+    color: c.color,
   }));
 
   // Sankey: income sources → expense sinks (direct proportional flow)
@@ -236,10 +236,10 @@ export async function buildDashboard(
 
   const sinks: SankeySink[] = categoryBreakdown
     .filter((c) => c.value > 0)
-    .map((c) => ({
+    .map((c, i) => ({
       name: c.name,
       value: Math.round(c.value),
-      color: c.color ?? EXPENSE_COLORS[0],
+      color: c.color ?? EXPENSE_COLORS[i % EXPENSE_COLORS.length],
     }));
 
   const totalSrcVal = sources.reduce((s, x) => s + x.value, 0);

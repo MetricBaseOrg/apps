@@ -8,7 +8,7 @@ The static editorial site and Blogger templates live in [`../MetricBase/`](../Me
 
 | Directory | Description | Production |
 | --- | --- | --- |
-| [`financial-tracker`](./financial-tracker/) | Multi-tenant financial tracker for individuals + companies. Multi-currency (IDR/USD), P&L + balance sheet, CSV/PDF export. Next.js 16 · Prisma 7 + Neon · Auth.js v5. | [`apps.metricbase.org`](https://apps.metricbase.org) |
+| [`financial-tracker`](./financial-tracker/) | Multi-tenant financial tracker for individuals + companies. Multi-currency (IDR/USD), P&L + balance sheet, investments + dividends, recurring transactions, workspace invites, audit log, CSV/PDF export. Next.js 16 · Prisma 7 + Neon · Auth.js v5. | [`apps.metricbase.org`](https://apps.metricbase.org) |
 
 ## Conventions
 
