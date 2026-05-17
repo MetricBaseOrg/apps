@@ -33,7 +33,7 @@ export function BalanceLineChart({
 
   // ── SVG dimensions ─────────────────────────────────
   const VB_W = 920, VB_H = 280;
-  const m = { top: 24, right: 24, bottom: 32, left: 16 };
+  const m = { top: 24, right: 56, bottom: 32, left: 24 };
   const innerW = VB_W - m.left - m.right;
   const innerH = VB_H - m.top - m.bottom;
 
@@ -148,7 +148,7 @@ export function BalanceLineChart({
   const fmtC = (v: number) => formatMoney(v, currency, { compact: true });
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 min-w-0 w-full">
       {/* Header */}
       <div className="flex justify-between items-center gap-4 flex-wrap">
         <div className="flex flex-col gap-1">
