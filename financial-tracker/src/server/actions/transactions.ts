@@ -282,8 +282,19 @@ export async function importTransactions(
       continue;
     }
 
-    const primary = acctByName.get(account.toLowerCase());
-    if (!primary) { errors.push(`Row ${rowNum}: account "${account}" not found.`); continue; }
+    let primary = acctByName.get(account.toLowerCase());
+    if (!primary) {
+      primary = await db.finAccount.create({
+        data: {
+          workspaceId: workspace.id,
+          name: account,
+          type: "BANK",
+          currency: workspace.baseCurrency,
+        },
+        select: { id: true, name: true, currency: true },
+      });
+      acctByName.set(account.toLowerCase(), primary);
+    }
 
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
@@ -294,16 +305,37 @@ export async function importTransactions(
     let counterId: string | null = null;
     if (txnType === "TRANSFER") {
       if (!counter_account) { errors.push(`Row ${rowNum}: TRANSFER requires counter_account.`); continue; }
-      const counter = acctByName.get(counter_account.toLowerCase());
-      if (!counter) { errors.push(`Row ${rowNum}: counter_account "${counter_account}" not found.`); continue; }
+      let counter = acctByName.get(counter_account.toLowerCase());
+      if (!counter) {
+        counter = await db.finAccount.create({
+          data: {
+            workspaceId: workspace.id,
+            name: counter_account,
+            type: "BANK",
+            currency: workspace.baseCurrency,
+          },
+          select: { id: true, name: true, currency: true },
+        });
+        acctByName.set(counter_account.toLowerCase(), counter);
+      }
       if (counter.id === primary.id) { errors.push(`Row ${rowNum}: source and destination must differ.`); continue; }
       counterId = counter.id;
     }
 
     let categoryId: string | null = null;
     if (category && txnType !== "TRANSFER") {
-      const cat = catByName.get(category.toLowerCase());
-      if (!cat) { errors.push(`Row ${rowNum}: category "${category}" not found — row skipped.`); continue; }
+      let cat = catByName.get(category.toLowerCase());
+      if (!cat) {
+        cat = await db.category.create({
+          data: {
+            workspaceId: workspace.id,
+            name: category,
+            kind: txnType === "INCOME" ? "INCOME" : "EXPENSE",
+          },
+          select: { id: true, name: true, kind: true },
+        });
+        catByName.set(category.toLowerCase(), cat);
+      }
       categoryId = cat.id;
     }
 
