@@ -168,14 +168,14 @@ export function SankeyChart({
                 <polyline
                   points={`${n.x},${n.midY} ${n.x - 6},${n.midY} ${tx + 2},${ly}`}
                   fill="none"
-                  stroke="#3a3a3a"
+                  stroke="var(--line-strong)"
                   strokeWidth="1"
                   opacity={dim ? 0.3 : 1}
                 />
               )}
               <text
                 x={tx} y={ly - 5}
-                fill="#ffffff" opacity={dim ? 0.5 : 1}
+                fill="var(--white)" opacity={dim ? 0.5 : 1}
                 fontFamily="Manrope, sans-serif" fontSize="12.5" fontWeight="600"
                 textAnchor="end" dominantBaseline="middle"
               >
@@ -183,7 +183,7 @@ export function SankeyChart({
               </text>
               <text
                 x={tx} y={ly + 9}
-                fill="#999999" opacity={dim ? 0.5 : 1}
+                fill="var(--gray-3)" opacity={dim ? 0.5 : 1}
                 fontFamily="JetBrains Mono, monospace" fontSize="9.5"
                 letterSpacing="1.6" textAnchor="end" dominantBaseline="middle"
               >
@@ -212,14 +212,14 @@ export function SankeyChart({
                 <polyline
                   points={`${rightEdge},${n.midY} ${rightEdge + 6},${n.midY} ${tx - 2},${ly}`}
                   fill="none"
-                  stroke="#3a3a3a"
+                  stroke="var(--line-strong)"
                   strokeWidth="1"
                   opacity={dim ? 0.3 : 1}
                 />
               )}
               <text
                 x={tx} y={ly - 5}
-                fill="#ffffff" opacity={dim ? 0.5 : 1}
+                fill="var(--white)" opacity={dim ? 0.5 : 1}
                 fontFamily="Manrope, sans-serif" fontSize="12.5" fontWeight="600"
                 dominantBaseline="middle"
               >
@@ -227,7 +227,7 @@ export function SankeyChart({
               </text>
               <text
                 x={tx} y={ly + 9}
-                fill="#999999" opacity={dim ? 0.5 : 1}
+                fill="var(--gray-3)" opacity={dim ? 0.5 : 1}
                 fontFamily="JetBrains Mono, monospace" fontSize="9.5"
                 letterSpacing="1.6" dominantBaseline="middle"
               >

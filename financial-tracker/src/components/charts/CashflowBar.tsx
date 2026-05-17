@@ -21,17 +21,17 @@ export function CashflowBar({
   return (
     <ResponsiveContainer width="100%" height={260}>
       <BarChart data={data} margin={{ top: 16, right: 8, bottom: 0, left: -16 }}>
-        <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
+        <CartesianGrid stroke="var(--line)" vertical={false} />
         <XAxis
           dataKey="month"
-          stroke="#999999"
+          stroke="var(--gray-3)"
           tickFormatter={(m) => m.slice(5)}
           tick={{ fontFamily: "var(--font-mono)", fontSize: 10 }}
           axisLine={false}
           tickLine={false}
         />
         <YAxis
-          stroke="#999999"
+          stroke="var(--gray-3)"
           tickFormatter={(v) =>
             new Intl.NumberFormat("en-US", {
               notation: "compact",
@@ -45,11 +45,12 @@ export function CashflowBar({
         />
         <Tooltip
           contentStyle={{
-            background: "#161616",
-            border: "1px solid rgba(201,168,76,0.3)",
+            background: "var(--topbar-bg)",
+            border: "1px solid var(--line-strong)",
             borderRadius: 0,
             fontFamily: "var(--font-mono)",
             fontSize: 11,
+            color: "var(--white)",
           }}
           formatter={(v) =>
             new Intl.NumberFormat("en-US", {
@@ -65,10 +66,11 @@ export function CashflowBar({
             fontSize: 10,
             textTransform: "uppercase",
             letterSpacing: "0.18em",
+            color: "var(--gray-2)",
           }}
         />
-        <Bar dataKey="income" fill="#2faf65" />
-        <Bar dataKey="expense" fill="#d4524a" />
+        <Bar dataKey="income" fill="var(--up)" />
+        <Bar dataKey="expense" fill="var(--down)" />
       </BarChart>
     </ResponsiveContainer>
   );

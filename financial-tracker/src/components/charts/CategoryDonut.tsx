@@ -39,11 +39,12 @@ export function CategoryDonut({
       <PieChart>
         <Tooltip
           contentStyle={{
-            background: "#161616",
-            border: "1px solid rgba(201,168,76,0.3)",
+            background: "var(--topbar-bg)",
+            border: "1px solid var(--line-strong)",
             borderRadius: 0,
             fontFamily: "var(--font-mono)",
             fontSize: 11,
+            color: "var(--white)",
           }}
           formatter={(v) =>
             new Intl.NumberFormat("en-US", {
@@ -59,8 +60,8 @@ export function CategoryDonut({
           nameKey="name"
           innerRadius={60}
           outerRadius={100}
-          stroke="#0a0a0a"
-          strokeWidth={1}
+          stroke="var(--bg-card)"
+          strokeWidth={2}
         >
           {data.map((d, i) => (
             <Cell

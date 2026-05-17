@@ -192,7 +192,7 @@ export function BalanceLineChart({
                 />
                 <text
                   x={VB_W - m.right + 6} y={y + 3}
-                  fill="#555" fontFamily="JetBrains Mono, monospace"
+                  fill="var(--gray-3)" fontFamily="JetBrains Mono, monospace"
                   fontSize="9" textAnchor="start"
                 >{fmtAxis(v)}</text>
               </g>
@@ -233,7 +233,7 @@ export function BalanceLineChart({
             <text
               key={'x-' + i}
               x={xScale(idx)} y={VB_H - 10}
-              fill="#555" fontFamily="JetBrains Mono, monospace"
+              fill="var(--gray-3)" fontFamily="JetBrains Mono, monospace"
               fontSize="9" letterSpacing="1.5" textAnchor="middle"
             >{fmtAxisX(windowed[idx].date).toUpperCase()}</text>
           ))}
