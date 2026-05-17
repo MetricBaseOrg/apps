@@ -3,7 +3,7 @@ import { NavDiamond } from "./NavDiamond";
 
 export function Topnav({ sectionLabel }: { sectionLabel?: string }) {
   return (
-    <nav className="sticky top-0 z-30 border-b border-line bg-[var(--color-bg-elev)]/60 backdrop-blur-sm">
+    <nav className="sticky top-0 z-40 border-b border-line bg-[var(--color-bg-elev)]/94 backdrop-blur-[10px]">
       <div className="mx-auto flex h-16 max-w-[1240px] items-center justify-between px-6 md:px-8">
         <Link href="/" className="flex items-center gap-3">
           <NavDiamond size={28} />

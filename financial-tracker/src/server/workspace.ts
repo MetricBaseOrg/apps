@@ -19,7 +19,10 @@ export async function getCurrentUserWorkspaces() {
   });
 }
 
-export async function requireMembership(slug: string) {
+export async function requireMembership(
+  slug: string,
+  requiredRole?: "ADMIN" | "MEMBER",
+) {
   const user = await requireUser();
   const workspace = await db.workspace.findUnique({ where: { slug } });
   if (!workspace) redirect("/app");
@@ -28,6 +31,10 @@ export async function requireMembership(slug: string) {
     where: { userId_workspaceId: { userId: user.id, workspaceId: workspace.id } },
   });
   if (!membership) redirect("/app");
+
+  if (requiredRole && membership.role !== requiredRole) {
+    redirect("/app");
+  }
 
   return { user, workspace, membership };
 }

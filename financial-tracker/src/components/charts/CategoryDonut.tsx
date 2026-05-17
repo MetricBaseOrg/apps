@@ -34,7 +34,8 @@ export function CategoryDonut({
     );
   }
   return (
-    <ResponsiveContainer width="100%" height={260}>
+    <div className="w-full h-[260px]">
+    <ResponsiveContainer width="100%" height="100%">
       <PieChart>
         <Tooltip
           contentStyle={{
@@ -70,5 +71,6 @@ export function CategoryDonut({
         </Pie>
       </PieChart>
     </ResponsiveContainer>
+    </div>
   );
 }

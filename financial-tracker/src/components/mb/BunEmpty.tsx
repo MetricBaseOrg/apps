@@ -11,15 +11,13 @@ export function BunEmpty({
 }) {
   return (
     <div className="mb-card p-12 flex flex-col items-center text-center gap-4">
-      <div
-        aria-hidden
-        className="w-16 h-16 overflow-hidden"
-        style={{ border: "1px solid var(--color-line-strong)" }}
-      >
+      <div className="w-[72px] h-[72px] rounded-full overflow-hidden shrink-0">
         <img
           src="https://metricbase.org/assets/pfp.png"
           alt="Bun"
-          className="w-full h-full object-cover"
+          width={72}
+          height={72}
+          className="object-cover w-full h-full"
         />
       </div>
       <Eyebrow>Bun says</Eyebrow>

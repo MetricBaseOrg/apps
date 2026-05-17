@@ -12,13 +12,22 @@ declare module "next-auth" {
   }
 }
 
+const adapter = {
+  ...PrismaAdapter(db),
+  // PrismaAdapter uses delete() which throws P2025 if the session is already gone.
+  // deleteMany() silently no-ops on missing records, fixing the double-signout error.
+  async deleteSession(sessionToken: string) {
+    await db.session.deleteMany({ where: { sessionToken } });
+  },
+};
+
 export const {
   handlers,
   auth,
   signIn,
   signOut,
 } = NextAuth({
-  adapter: PrismaAdapter(db),
+  adapter,
   session: { strategy: "database" },
   pages: {
     signIn: "/sign-in",

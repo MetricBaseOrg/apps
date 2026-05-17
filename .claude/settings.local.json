@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_in_Chrome__find",
+      "mcp__Claude_in_Chrome__browser_batch",
+      "mcp__Claude_in_Chrome__computer",
+      "Bash(cd /d/OneDrive/MetricBase/apps/financial-tracker && cat .env.local)",
+      "Bash(npm run *)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "Bash(npx tsx *)",
+      "Bash(npx prisma *)",
+      "Bash(Remove-Item \"D:\\\\OneDrive\\\\MetricBase\\\\apps\\\\financial-tracker\\\\.claude\\\\worktrees\\\\vigilant-hypatia-07898c\\\\financial-tracker\\\\src\\\\app\\\\app\\\\[workspace]\\\\recurring\\\\RecurringContent.tsx\" -Force)",
+      "Bash(rm \"D:\\\\OneDrive\\\\MetricBase\\\\apps\\\\financial-tracker\\\\.claude\\\\worktrees\\\\vigilant-hypatia-07898c\\\\financial-tracker\\\\src\\\\app\\\\app\\\\[workspace]\\\\recurring\\\\RecurringContent.tsx\")",
+      "Bash(curl -s http://localhost:3004)",
+      "Bash(curl -s http://localhost:3001)",
+      "Bash(pkill -f \"next dev\")"
+    ]
+  }
+}

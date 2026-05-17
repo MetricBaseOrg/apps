@@ -1,13 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 import { updateProfile, type ProfileState } from "@/server/actions/profile";
 import { GoldButton } from "@/components/mb/GoldButton";
 import { Eyebrow } from "@/components/mb/Eyebrow";
 
-export function ProfileEditForm({ initialName }: { initialName: string }) {
+export function ProfileEditForm({
+  initialName,
+  initialImage,
+}: {
+  initialName: string;
+  initialImage: string | null;
+}) {
   const router = useRouter();
+  const [imageUrl, setImageUrl] = useState(initialImage ?? "");
+  const [imageError, setImageError] = useState(false);
   const [state, formAction, pending] = useActionState<ProfileState, FormData>(
     updateProfile,
     {},
@@ -27,6 +36,51 @@ export function ProfileEditForm({ initialName }: { initialName: string }) {
           className="mb-input"
         />
       </label>
+      <div className="border-t border-line pt-5">
+        <Eyebrow>Profile picture</Eyebrow>
+      </div>
+      <label className="flex flex-col gap-1.5">
+        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-gray-3">
+          Image URL
+        </span>
+        <input
+          type="text"
+          name="image"
+          value={imageUrl}
+          onChange={(e) => {
+            setImageUrl(e.target.value);
+            setImageError(false);
+          }}
+          placeholder="https://example.com/avatar.jpg"
+          className="mb-input"
+          maxLength={2048}
+        />
+      </label>
+      {imageUrl && !imageError && (
+        <div className="flex justify-center">
+          <img
+            src={imageUrl}
+            alt="Profile preview"
+            className="w-20 h-20 object-cover rounded-full"
+            onError={() => setImageError(true)}
+          />
+        </div>
+      )}
+      {imageUrl && imageError && (
+        <p className="font-mono text-xs text-[var(--color-down)]">
+          Failed to load image
+        </p>
+      )}
+      {!imageUrl && initialImage && (
+        <div className="flex justify-center">
+          <img
+            src={initialImage}
+            alt="Current profile picture"
+            className="w-20 h-20 object-cover rounded-full"
+            onError={() => setImageError(true)}
+          />
+        </div>
+      )}
       {state?.error && (
         <p className="font-mono text-xs text-[var(--color-down)]">
           {state.error}

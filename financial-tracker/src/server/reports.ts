@@ -29,6 +29,7 @@ export async function buildPnl(
       workspaceId,
       date: { gte: from, lt: to },
       type: { in: ["INCOME", "EXPENSE"] },
+      positionId: null,
     },
     include: { category: true },
   });

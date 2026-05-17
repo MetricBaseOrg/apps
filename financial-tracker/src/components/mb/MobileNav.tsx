@@ -41,6 +41,8 @@ export function MobileNav({ workspaceSlug }: { workspaceSlug: string }) {
       items: [
         { href: `/app/${workspaceSlug}/dashboard`, label: "Dashboard" },
         { href: `/app/${workspaceSlug}/transactions`, label: "Transactions" },
+        { href: `/app/${workspaceSlug}/recurring`, label: "Recurring" },
+        { href: `/app/${workspaceSlug}/investments`, label: "Investments" },
         { href: `/app/${workspaceSlug}/accounts`, label: "Accounts" },
         { href: `/app/${workspaceSlug}/budgets`, label: "Budgets" },
         { href: `/app/${workspaceSlug}/recurring`, label: "Recurring" },
@@ -81,6 +83,7 @@ export function MobileNav({ workspaceSlug }: { workspaceSlug: string }) {
       title: "MetricBase",
       items: [
         { href: METRICBASE_LINKS.home, label: "Home", external: true },
+        { href: "https://metricbase.org/journal", label: "Journal", external: true },
         { href: METRICBASE_LINKS.energy, label: "Energy", external: true },
         { href: METRICBASE_LINKS.chain, label: "Crypto", external: true },
         { href: METRICBASE_LINKS.saham, label: "Saham", external: true },
@@ -95,7 +98,7 @@ export function MobileNav({ workspaceSlug }: { workspaceSlug: string }) {
       <button
         type="button"
         aria-label="Menu"
-        aria-expanded={open}
+        aria-expanded={open ? "true" : "false"}
         onClick={() => setOpen((v) => !v)}
         className="md:hidden inline-flex items-center gap-2 px-3 h-10 border border-gold bg-[rgba(201,168,76,0.08)] hover:bg-gold hover:text-black transition-colors text-gold"
       >

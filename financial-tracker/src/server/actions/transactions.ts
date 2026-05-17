@@ -204,3 +204,140 @@ export async function updateTransaction(
   revalidatePath(`/app/${slug}/dashboard`);
   return {};
 }
+
+// ── CSV Import ────────────────────────────────────────────────────────────────
+
+export type ImportResult = { imported: number; errors: string[] };
+
+function splitCsvLine(line: string): string[] {
+  const result: string[] = [];
+  let current = "";
+  let inQuote = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') { inQuote = !inQuote; continue; }
+    if (ch === "," && !inQuote) { result.push(current); current = ""; continue; }
+    current += ch;
+  }
+  result.push(current);
+  return result;
+}
+
+function parseCsvRows(text: string): Record<string, string>[] {
+  const lines = text
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .split("\n")
+    .filter((l) => l.trim() && !l.trim().startsWith("#"));
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(",").map((h) => h.trim().toLowerCase().replace(/ /g, "_"));
+  return lines.slice(1).map((line) => {
+    const vals = splitCsvLine(line);
+    const row: Record<string, string> = {};
+    headers.forEach((h, i) => { row[h] = (vals[i] ?? "").trim(); });
+    return row;
+  });
+}
+
+export async function importTransactions(
+  slug: string,
+  _prev: ImportResult | undefined,
+  formData: FormData,
+): Promise<ImportResult> {
+  const { workspace } = await requireMembership(slug);
+  const file = formData.get("csv") as File | null;
+  if (!file || file.size === 0) return { imported: 0, errors: ["No file provided."] };
+
+  const text = await file.text();
+  const rows = parseCsvRows(text);
+  if (rows.length === 0) return { imported: 0, errors: ["CSV has no data rows."] };
+
+  const [accounts, categories] = await Promise.all([
+    db.finAccount.findMany({ where: { workspaceId: workspace.id, archivedAt: null }, select: { id: true, name: true, currency: true } }),
+    db.category.findMany({ where: { workspaceId: workspace.id }, select: { id: true, name: true, kind: true } }),
+  ]);
+
+  const acctByName = new Map(accounts.map((a) => [a.name.toLowerCase(), a]));
+  const catByName = new Map(categories.map((c) => [c.name.toLowerCase(), c]));
+
+  let imported = 0;
+  const errors: string[] = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const rowNum = i + 2;
+    const { date, type, account, amount, memo, category, counter_account } = row;
+
+    if (!date || !type || !account || !amount) {
+      errors.push(`Row ${rowNum}: missing required field (date, type, account, amount).`);
+      continue;
+    }
+
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) { errors.push(`Row ${rowNum}: invalid date "${date}".`); continue; }
+
+    const txnType = type.trim().toUpperCase();
+    if (!["INCOME", "EXPENSE", "TRANSFER"].includes(txnType)) {
+      errors.push(`Row ${rowNum}: type must be INCOME, EXPENSE, or TRANSFER.`);
+      continue;
+    }
+
+    const primary = acctByName.get(account.toLowerCase());
+    if (!primary) { errors.push(`Row ${rowNum}: account "${account}" not found.`); continue; }
+
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      errors.push(`Row ${rowNum}: amount must be a positive number.`);
+      continue;
+    }
+
+    let counterId: string | null = null;
+    if (txnType === "TRANSFER") {
+      if (!counter_account) { errors.push(`Row ${rowNum}: TRANSFER requires counter_account.`); continue; }
+      const counter = acctByName.get(counter_account.toLowerCase());
+      if (!counter) { errors.push(`Row ${rowNum}: counter_account "${counter_account}" not found.`); continue; }
+      if (counter.id === primary.id) { errors.push(`Row ${rowNum}: source and destination must differ.`); continue; }
+      counterId = counter.id;
+    }
+
+    let categoryId: string | null = null;
+    if (category && txnType !== "TRANSFER") {
+      const cat = catByName.get(category.toLowerCase());
+      if (!cat) { errors.push(`Row ${rowNum}: category "${category}" not found — row skipped.`); continue; }
+      categoryId = cat.id;
+    }
+
+    let fxRate: Decimal;
+    try {
+      fxRate = await getFxRate(primary.currency, workspace.baseCurrency, parsedDate);
+    } catch {
+      errors.push(`Row ${rowNum}: FX rate unavailable for ${primary.currency}→${workspace.baseCurrency} on ${date}.`);
+      continue;
+    }
+
+    const amountD = new Decimal(parsedAmount);
+    await db.transaction.create({
+      data: {
+        workspaceId: workspace.id,
+        finAccountId: primary.id,
+        counterAccountId: counterId,
+        categoryId,
+        date: parsedDate,
+        amount: amountD.toString(),
+        currency: primary.currency,
+        fxRate: fxRate.toString(),
+        baseAmount: amountD.times(fxRate).toString(),
+        type: txnType as "INCOME" | "EXPENSE" | "TRANSFER",
+        memo: memo || null,
+      },
+    });
+    imported++;
+  }
+
+  if (imported > 0) {
+    revalidatePath(`/app/${slug}/transactions`);
+    revalidatePath(`/app/${slug}/dashboard`);
+  }
+
+  return { imported, errors };
+}

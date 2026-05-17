@@ -7,7 +7,9 @@ const globalForPrisma = globalThis as unknown as {
 
 function createClient() {
   const connectionString =
-    process.env.DATABASE_URL ?? "postgresql://placeholder:placeholder@localhost:5432/placeholder";
+    process.env.DIRECT_URL ??
+    process.env.DATABASE_URL ??
+    "postgresql://placeholder:placeholder@localhost:5432/placeholder";
   const adapter = new PrismaNeon({ connectionString });
   return new PrismaClient({
     adapter,
