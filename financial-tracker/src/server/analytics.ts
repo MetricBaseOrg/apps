@@ -263,10 +263,12 @@ export async function buildDashboard(
 
   const recent = await recentTxns(workspaceId);
 
-  // ── Running Balance (1 Year Max) ──
+  // ── Running Balance (1 Year Max or rangeStart) ──
   const oneYearAgo = new Date();
   oneYearAgo.setUTCFullYear(oneYearAgo.getUTCFullYear() - 1);
   oneYearAgo.setUTCHours(0, 0, 0, 0);
+
+  const seriesStartDate = monthStart < oneYearAgo ? monthStart : oneYearAgo;
 
   const accounts = await db.finAccount.findMany({ where: { workspaceId }, select: { openingBalance: true } });
   let totalOpening = 0;
@@ -275,8 +277,8 @@ export async function buildDashboard(
   }
 
   const [priorInc, priorExp] = await Promise.all([
-    db.transaction.aggregate({ where: { workspaceId, type: "INCOME", date: { lt: oneYearAgo } }, _sum: { baseAmount: true } }),
-    db.transaction.aggregate({ where: { workspaceId, type: "EXPENSE", date: { lt: oneYearAgo } }, _sum: { baseAmount: true } })
+    db.transaction.aggregate({ where: { workspaceId, type: "INCOME", date: { lt: seriesStartDate } }, _sum: { baseAmount: true } }),
+    db.transaction.aggregate({ where: { workspaceId, type: "EXPENSE", date: { lt: seriesStartDate } }, _sum: { baseAmount: true } })
   ]);
   
   let currentBalance = totalOpening 
@@ -284,7 +286,7 @@ export async function buildDashboard(
     - new Decimal(priorExp._sum.baseAmount?.toString() || 0).toNumber();
 
   const yearTxns = await db.transaction.findMany({
-    where: { workspaceId, type: { in: ["INCOME", "EXPENSE"] }, date: { gte: oneYearAgo } },
+    where: { workspaceId, type: { in: ["INCOME", "EXPENSE"] }, date: { gte: seriesStartDate } },
     select: { date: true, type: true, baseAmount: true },
     orderBy: { date: "asc" }
   });
@@ -298,9 +300,12 @@ export async function buildDashboard(
   }
 
   const balanceSeries: { date: string; value: number }[] = [];
-  const iterDate = new Date(oneYearAgo);
+  const iterDate = new Date(seriesStartDate);
   const endIterDate = new Date();
-  endIterDate.setUTCHours(0, 0, 0, 0); // up to today
+  if (nextMonthStart > endIterDate) {
+    endIterDate.setTime(nextMonthStart.getTime());
+  }
+  endIterDate.setUTCHours(0, 0, 0, 0); // up to today or range end
 
   while (iterDate <= endIterDate) {
     const day = iterDate.toISOString().slice(0, 10);

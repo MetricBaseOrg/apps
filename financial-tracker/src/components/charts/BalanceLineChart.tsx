@@ -16,33 +16,20 @@ export function BalanceLineChart({
   globalStart: Date;
   globalEnd: Date;
 }) {
-  // ── Timeframe windowing ────────────────────────────
-  const TIMEFRAMES = [
-    { id: '1M',  days: 30  },
-    { id: '3M',  days: 90  },
-    { id: '6M',  days: 180 },
-    { id: 'YTD', days: null }, // computed
-    { id: '1Y',  days: 365 },
-    { id: 'CUSTOM', days: null },
-  ] as const;
-  
-  type TfId = typeof TIMEFRAMES[number]['id'];
-  const [tfId, setTfId] = useState<TfId>('3M');
-  const tf = TIMEFRAMES.find(t => t.id === tfId)!;
-
   const windowed = useMemo(() => {
     if (series.length === 0) return [];
-    if (tfId === 'YTD') {
-      const lastYear = series[series.length - 1].date.slice(0, 4);
-      return series.filter(d => d.date.startsWith(lastYear));
-    }
-    if (tfId === 'CUSTOM') {
-      const startStr = globalStart.toISOString().slice(0, 10);
-      const endStr = globalEnd.toISOString().slice(0, 10);
-      return series.filter(d => d.date >= startStr && d.date <= endStr);
-    }
-    return series.slice(-(tf.days || 0));
-  }, [series, tfId, tf.days, globalStart, globalEnd]);
+    const startStr = globalStart.toISOString().slice(0, 10);
+    
+    // globalEnd is usually the 1st of the next month (exclusive) or similar.
+    // If it's 2024-05-01, the last valid day is 2024-04-30.
+    // However, if we just use <= endStr, we might include the first day of the next period.
+    // Let's compute a proper inclusive end string:
+    const endInclusive = new Date(globalEnd);
+    endInclusive.setUTCDate(endInclusive.getUTCDate() - 1);
+    const endStr = endInclusive.toISOString().slice(0, 10);
+
+    return series.filter(d => d.date >= startStr && d.date <= endStr);
+  }, [series, globalStart, globalEnd]);
 
   // ── SVG dimensions ─────────────────────────────────
   const VB_W = 920, VB_H = 280;
@@ -162,32 +149,16 @@ export function BalanceLineChart({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Header with timeframe toggle */}
+      {/* Header */}
       <div className="flex justify-between items-center gap-4 flex-wrap">
         <div className="flex flex-col gap-1">
-          <span className="font-mono text-xs uppercase tracking-[0.1em] text-gray-3">Latest balance</span>
+          <span className="font-mono text-xs uppercase tracking-[0.1em] text-gray-3">Closing balance</span>
           <span className="font-mono text-2xl font-extrabold text-white tracking-tight">
             {fmt(endV)}
           </span>
           <span className={`font-mono text-[11px] ${change >= 0 ? 'text-[var(--color-up)]' : 'text-[var(--color-down)]'}`}>
-            {change >= 0 ? '▲' : '▼'} {fmt(Math.abs(change))} ({changePct >= 0 ? '+' : ''}{changePct.toFixed(1)}%) · {tfId}
+            {change >= 0 ? '▲' : '▼'} {fmt(Math.abs(change))} ({changePct >= 0 ? '+' : ''}{changePct.toFixed(1)}%)
           </span>
-        </div>
-        <div className="flex gap-px bg-line border border-line">
-          {TIMEFRAMES.map(t => (
-            <button
-              key={t.id}
-              onClick={() => setTfId(t.id as TfId)}
-              className={[
-                "font-mono text-[10px] uppercase tracking-[0.18em] px-3 py-1.5 transition-colors border-none cursor-pointer",
-                tfId === t.id
-                  ? "bg-gold text-black font-bold"
-                  : "bg-bg-card text-gray-2 hover:text-gold",
-              ].join(" ")}
-            >
-              {t.id}
-            </button>
-          ))}
         </div>
       </div>
 
