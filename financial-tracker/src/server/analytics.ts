@@ -34,7 +34,22 @@ const INCOME_COLORS = ["#c9a84c", "#e5c168", "#d9b958", "#bfa44d", "#8a7434", "#
 const EXPENSE_COLORS = ["#ef4444", "#dc2626", "#b91c1c", "#f87171", "#991b1b", "#fca5a5", "#7f1d1d", "#fecaca"];
 const INVEST_COLOR = "#4a9eff";
 
-function periodRange(period: DashboardPeriod): { rangeStart: Date; rangeEnd: Date; barMonths: number } {
+function periodRange(
+  period: DashboardPeriod,
+  customRange?: { start: Date; end: Date }
+): { rangeStart: Date; rangeEnd: Date; barMonths: number } {
+  if (period === "custom" && customRange) {
+    const barMonths = Math.max(
+      1,
+      (customRange.end.getUTCFullYear() - customRange.start.getUTCFullYear()) * 12 +
+        (customRange.end.getUTCMonth() - customRange.start.getUTCMonth()) +
+        1
+    );
+    // ensure rangeEnd is the next day after the end date if it's not already exclusive
+    // Actually, let's keep it as is, assuming customRange.end is exclusive.
+    return { rangeStart: customRange.start, rangeEnd: customRange.end, barMonths };
+  }
+
   const now = new Date();
   const rangeEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
   switch (period) {
@@ -56,12 +71,16 @@ function periodRange(period: DashboardPeriod): { rangeStart: Date; rangeEnd: Dat
       return { rangeStart: new Date(Date.UTC(now.getUTCFullYear(), 0, 1)), rangeEnd, barMonths: now.getUTCMonth() + 1 };
     case "1y":
       return { rangeStart: new Date(Date.UTC(now.getUTCFullYear() - 1, now.getUTCMonth() + 1, 1)), rangeEnd, barMonths: 12 };
+    case "custom":
+      // fallback if customRange is missing
+      return { rangeStart: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)), rangeEnd, barMonths: 1 };
   }
 }
 
 export async function buildDashboard(
   workspaceId: string,
   period: DashboardPeriod = "mtd",
+  customRange?: { start: Date; end: Date }
 ): Promise<DashboardSummary> {
   const workspace = await db.workspace.findUnique({
     where: { id: workspaceId },
@@ -70,7 +89,7 @@ export async function buildDashboard(
   const isCompany = workspace?.type === "COMPANY";
 
   const now = new Date();
-  const { rangeStart: monthStart, rangeEnd: nextMonthStart, barMonths } = periodRange(period);
+  const { rangeStart: monthStart, rangeEnd: nextMonthStart, barMonths } = periodRange(period, customRange);
   const prevMonthStart = new Date(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1),
   );

@@ -12,21 +12,31 @@ import { buildDashboard, buildAlerts } from "@/server/analytics";
 import { PERIOD_LABELS } from "@/lib/periods";
 import type { DashboardPeriod } from "@/lib/periods";
 
-const VALID_PERIODS = new Set(["mtd", "qtd", "3m", "6m", "ytd", "1y"]);
+const VALID_PERIODS = new Set(["mtd", "qtd", "3m", "6m", "ytd", "1y", "custom"]);
 
 export default async function DashboardPage({
   params,
   searchParams,
 }: {
   params: Promise<{ workspace: string }>;
-  searchParams: Promise<{ period?: string }>;
+  searchParams: Promise<{ period?: string; start?: string; end?: string }>;
 }) {
   const { workspace: slug } = await params;
-  const { period: rawPeriod } = await searchParams;
+  const { period: rawPeriod, start: rawStart, end: rawEnd } = await searchParams;
   const period: DashboardPeriod = VALID_PERIODS.has(rawPeriod ?? "") ? (rawPeriod as DashboardPeriod) : "mtd";
 
+  let customRange;
+  if (period === "custom" && rawStart && rawEnd) {
+    const start = new Date(rawStart);
+    const end = new Date(rawEnd);
+    if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+      end.setUTCDate(end.getUTCDate() + 1); // Make end date exclusive
+      customRange = { start, end };
+    }
+  }
+
   const { workspace } = await requireMembership(slug);
-  const data = await buildDashboard(workspace.id, period);
+  const data = await buildDashboard(workspace.id, period, customRange);
   const alerts = await buildAlerts(workspace.id);
 
   const cashflowSign = parseFloat(data.cashflowMtd) >= 0 ? "up" : "down";
