@@ -132,9 +132,12 @@ export default async function DashboardPage({
               {data.categoryBreakdown.slice(0, 5).map((c) => (
                 <li
                   key={c.name}
-                  className="flex justify-between text-xs font-mono"
+                  className="flex justify-between items-center text-xs font-mono"
                 >
-                  <span className="text-gray-2">{c.name}</span>
+                  <span className="text-gray-2 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color || '#ef4444' }} />
+                    {c.name}
+                  </span>
                   <span className="text-white mono">
                     <Money value={c.value} currency={workspace.baseCurrency} />
                   </span>
@@ -146,7 +149,17 @@ export default async function DashboardPage({
       </div>
 
       <div className="mb-card p-6 flex flex-col gap-4">
-        <Eyebrow>Money flow · {PERIOD_LABELS[period]}</Eyebrow>
+        <div className="flex justify-between items-center flex-wrap gap-2">
+          <Eyebrow>Money flow · {PERIOD_LABELS[period]}</Eyebrow>
+          <div className="flex gap-3 sm:gap-4 font-mono text-[10px] uppercase tracking-[0.1em] text-gray-3">
+            <span className="flex items-center gap-1.5"><div className="w-2 h-2 bg-[#c9a84c]"></div> Income</span>
+            <span className="flex items-center gap-1.5"><div className="w-2 h-2 bg-[#ef4444]"></div> Expense</span>
+            <span className="flex items-center gap-1.5">
+              <div className={`w-2 h-2 ${parseFloat(data.incomeMtd) >= parseFloat(data.expenseMtd) ? 'bg-[#22c55e]' : 'bg-[#ef4444]'}`}></div> 
+              {workspace.type === "COMPANY" ? (parseFloat(data.incomeMtd) >= parseFloat(data.expenseMtd) ? "Net Profit" : "Net Loss") : "Net Savings"}
+            </span>
+          </div>
+        </div>
         <SankeyChart
           sources={data.sankey.sources}
           sinks={data.sankey.sinks}
