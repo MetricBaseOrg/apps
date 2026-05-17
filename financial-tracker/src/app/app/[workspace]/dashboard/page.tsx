@@ -8,7 +8,7 @@ import { CashflowBar } from "@/components/charts/CashflowBar";
 import { CategoryDonut } from "@/components/charts/CategoryDonut";
 import { SankeyChart } from "@/components/charts/SankeyChart";
 import { TimeframePicker } from "@/components/mb/TimeframePicker";
-import { buildDashboard } from "@/server/analytics";
+import { buildDashboard, buildAlerts } from "@/server/analytics";
 import { PERIOD_LABELS } from "@/lib/periods";
 import type { DashboardPeriod } from "@/lib/periods";
 
@@ -27,6 +27,7 @@ export default async function DashboardPage({
 
   const { workspace } = await requireMembership(slug);
   const data = await buildDashboard(workspace.id, period);
+  const alerts = await buildAlerts(workspace.id);
 
   const cashflowSign = parseFloat(data.cashflowMtd) >= 0 ? "up" : "down";
   const momDelta =
