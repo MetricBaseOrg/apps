@@ -45,8 +45,6 @@ export function MobileNav({ workspaceSlug }: { workspaceSlug: string }) {
         { href: `/app/${workspaceSlug}/investments`, label: "Investments" },
         { href: `/app/${workspaceSlug}/accounts`, label: "Accounts" },
         { href: `/app/${workspaceSlug}/budgets`, label: "Budgets" },
-        { href: `/app/${workspaceSlug}/recurring`, label: "Recurring" },
-        { href: `/app/${workspaceSlug}/investments`, label: "Investments" },
       ],
     },
     {
@@ -83,7 +81,6 @@ export function MobileNav({ workspaceSlug }: { workspaceSlug: string }) {
       title: "MetricBase",
       items: [
         { href: METRICBASE_LINKS.home, label: "Home", external: true },
-        { href: "https://metricbase.org/journal", label: "Journal", external: true },
         { href: METRICBASE_LINKS.energy, label: "Energy", external: true },
         { href: METRICBASE_LINKS.chain, label: "Crypto", external: true },
         { href: METRICBASE_LINKS.saham, label: "Saham", external: true },
