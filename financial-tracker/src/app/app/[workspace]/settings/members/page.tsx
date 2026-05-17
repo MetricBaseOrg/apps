@@ -117,14 +117,27 @@ export default async function MembersSettingsPage({
                 key={m.id}
                 className="border-b border-line last:border-b-0 px-4 py-3 grid grid-cols-1 md:grid-cols-[1.6fr_1.2fr_220px] gap-2 md:items-center"
               >
-                <span className="font-sans text-sm text-white">
-                  {m.user.name ?? "—"}
-                  {m.userId === user.id && (
-                    <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-3">
-                      you
-                    </span>
+                <div className="flex items-center gap-3 min-w-0">
+                  {m.user.image ? (
+                    <img
+                      src={m.user.image}
+                      alt={m.user.name ?? "Member avatar"}
+                      className="w-7 h-7 rounded-none object-cover shrink-0 border border-line"
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-none bg-surface shrink-0 border border-line flex items-center justify-center font-mono text-xs text-gray-3 uppercase">
+                      {(m.user.name || m.user.email || "U").charAt(0)}
+                    </div>
                   )}
-                </span>
+                  <span className="font-sans text-sm text-white truncate">
+                    {m.user.name ?? "—"}
+                    {m.userId === user.id && (
+                      <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-3 shrink-0">
+                        you
+                      </span>
+                    )}
+                  </span>
+                </div>
                 <span className="font-mono text-xs text-gray-2 break-all">
                   {m.user.email}
                 </span>

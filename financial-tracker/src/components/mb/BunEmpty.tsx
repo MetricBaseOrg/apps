@@ -11,7 +11,7 @@ export function BunEmpty({
 }) {
   return (
     <div className="mb-card p-12 flex flex-col items-center text-center gap-4">
-      <div className="w-[72px] h-[72px] rounded-full overflow-hidden shrink-0">
+      <div className="w-[72px] h-[72px] rounded-none overflow-hidden shrink-0">
         <img
           src="https://metricbase.org/assets/pfp.png"
           alt="Bun"

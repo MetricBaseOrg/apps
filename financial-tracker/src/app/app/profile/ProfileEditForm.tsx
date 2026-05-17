@@ -61,7 +61,7 @@ export function ProfileEditForm({
           <img
             src={imageUrl}
             alt="Profile preview"
-            className="w-20 h-20 object-cover rounded-full"
+            className="w-20 h-20 object-cover rounded-none"
             onError={() => setImageError(true)}
           />
         </div>
@@ -76,7 +76,7 @@ export function ProfileEditForm({
           <img
             src={initialImage}
             alt="Current profile picture"
-            className="w-20 h-20 object-cover rounded-full"
+            className="w-20 h-20 object-cover rounded-none"
             onError={() => setImageError(true)}
           />
         </div>
