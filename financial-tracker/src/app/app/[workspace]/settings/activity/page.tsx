@@ -95,7 +95,7 @@ export default async function ActivityPage({
         />
       ) : (
         <div className="mb-card">
-          <div className="hidden md:grid grid-cols-[150px_140px_150px_1fr] px-4 py-3 border-b border-line">
+          <div className="hidden md:grid grid-cols-[150px_140px_200px_1fr] px-4 py-3 border-b border-line">
             {["When", "Action", "Member", "Summary"].map((h) => (
               <span
                 key={h}
@@ -110,16 +110,35 @@ export default async function ActivityPage({
               key={l.id}
               className="border-b border-line last:border-b-0 hover:bg-[var(--color-bg-hover)] transition-colors"
             >
-              <div className="hidden md:grid grid-cols-[150px_140px_150px_1fr] px-4 py-3 items-center">
+              <div className="hidden md:grid grid-cols-[150px_140px_200px_1fr] px-4 py-3 items-center gap-2">
                 <span className="font-mono text-xs text-gray-2">
                   {l.createdAt.toISOString().slice(0, 16).replace("T", " ")}
                 </span>
                 <span className="font-mono text-[11px] text-gold">
                   {l.action}
                 </span>
-                <span className="font-mono text-xs text-gray-2 truncate">
-                  {l.user?.email ?? "system"}
-                </span>
+                <div className="flex items-center gap-2 min-w-0">
+                  {l.user ? (
+                    l.user.image ? (
+                      <img
+                        src={l.user.image}
+                        alt="Avatar"
+                        className="w-5 h-5 rounded-full object-cover shrink-0 border border-line"
+                      />
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-surface shrink-0 border border-line flex items-center justify-center font-mono text-[10px] text-gray-3 uppercase">
+                        {(l.user.name || l.user.email || "U").charAt(0)}
+                      </div>
+                    )
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-surface shrink-0 border border-line flex items-center justify-center font-mono text-[10px] text-gray-3 uppercase">
+                      S
+                    </div>
+                  )}
+                  <span className="font-mono text-xs text-gray-2 truncate">
+                    {l.user?.email ?? "system"}
+                  </span>
+                </div>
                 <span className="font-sans text-sm text-white">
                   {l.summary}
                   <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.15em] text-gray-3">
@@ -136,10 +155,27 @@ export default async function ActivityPage({
                     {l.action}
                   </span>
                 </div>
-                <span className="font-mono text-[10px] text-gray-3 uppercase tracking-[0.18em]">
-                  {l.createdAt.toISOString().slice(0, 16).replace("T", " ")} ·{" "}
-                  {l.user?.email ?? "system"}
-                </span>
+                <div className="flex items-center gap-1.5 font-mono text-[10px] text-gray-3 uppercase tracking-[0.18em]">
+                  <span>{l.createdAt.toISOString().slice(0, 16).replace("T", " ")} ·</span>
+                  {l.user ? (
+                    l.user.image ? (
+                      <img
+                        src={l.user.image}
+                        alt="Avatar"
+                        className="w-3.5 h-3.5 rounded-full object-cover shrink-0 border border-line"
+                      />
+                    ) : (
+                      <div className="w-3.5 h-3.5 rounded-full bg-surface shrink-0 border border-line flex items-center justify-center text-[8px]">
+                        {(l.user.name || l.user.email || "U").charAt(0)}
+                      </div>
+                    )
+                  ) : (
+                    <div className="w-3.5 h-3.5 rounded-full bg-surface shrink-0 border border-line flex items-center justify-center text-[8px]">
+                      S
+                    </div>
+                  )}
+                  <span className="truncate">{l.user?.email ?? "system"}</span>
+                </div>
               </div>
             </div>
           ))}

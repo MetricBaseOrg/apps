@@ -122,10 +122,10 @@ export default async function MembersSettingsPage({
                     <img
                       src={m.user.image}
                       alt={m.user.name ?? "Member avatar"}
-                      className="w-7 h-7 rounded-none object-cover shrink-0 border border-line"
+                      className="w-7 h-7 rounded-full object-cover shrink-0 border border-line"
                     />
                   ) : (
-                    <div className="w-7 h-7 rounded-none bg-surface shrink-0 border border-line flex items-center justify-center font-mono text-xs text-gray-3 uppercase">
+                    <div className="w-7 h-7 rounded-full bg-surface shrink-0 border border-line flex items-center justify-center font-mono text-xs text-gray-3 uppercase">
                       {(m.user.name || m.user.email || "U").charAt(0)}
                     </div>
                   )}

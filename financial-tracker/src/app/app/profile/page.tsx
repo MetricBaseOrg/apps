@@ -37,7 +37,7 @@ export default async function ProfilePage() {
                 <img
                   src={user.image}
                   alt="Profile avatar"
-                  className="w-16 h-16 object-cover rounded-none flex-shrink-0"
+                  className="w-16 h-16 object-cover rounded-full flex-shrink-0"
                 />
               )}
               <div className="flex-1">

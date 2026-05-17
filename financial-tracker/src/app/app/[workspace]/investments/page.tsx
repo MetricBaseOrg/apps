@@ -119,43 +119,49 @@ export default async function InvestmentsPage({
               </tr>
             </thead>
             <tbody>
-              {aggregatedPositions.map((agg) => (
-                <tr
-                  key={agg.position.id}
-                  className="border-b border-line last:border-b-0 hover:bg-[var(--color-bg-hover)] transition-colors"
-                >
-                  <td className="px-6 py-3 font-mono font-semibold text-white">
-                    {agg.position.symbol}
-                  </td>
-                  <td className="px-6 py-3 text-gray-2 text-xs">
-                    {agg.position.finAccount?.name}
-                  </td>
-                  <td className="px-6 py-3 text-gray-2 text-xs">
-                    {agg.position.unitKind.charAt(0) +
-                      agg.position.unitKind.slice(1).toLowerCase()}
-                  </td>
-                  <td className="px-6 py-3 text-right text-white font-mono text-xs">
-                    {agg.quantity.toString()}
-                  </td>
-                  <td className="px-6 py-3 text-right text-white font-mono text-xs">
-                    {agg.avgCostPerUnit.toString()}{" "}
-                    {agg.position.finAccount?.currency}
-                  </td>
-                  <td className="px-6 py-3 text-right text-white font-mono text-xs">
-                    {agg.totalCostBasis.toString()}{" "}
-                    {agg.position.finAccount?.currency}
-                  </td>
-                  <td
-                    className={`px-6 py-3 text-right font-mono text-xs ${
-                      agg.realizedPnL.isNegative() ? "text-[var(--color-down)]" : "text-[var(--color-up)]"
-                    }`}
+              {aggregatedPositions.map((agg) => {
+                const fmt = new Intl.NumberFormat("en-US", {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
+                });
+                return (
+                  <tr
+                    key={agg.position.id}
+                    className="border-b border-line last:border-b-0 hover:bg-[var(--color-bg-hover)] transition-colors"
                   >
-                    {agg.realizedPnL.isNegative() ? "−" : "+"}
-                    {agg.realizedPnL.abs().toString()}{" "}
-                    {agg.position.finAccount?.currency}
-                  </td>
-                </tr>
-              ))}
+                    <td className="px-6 py-3 font-mono font-semibold text-white">
+                      {agg.position.symbol}
+                    </td>
+                    <td className="px-6 py-3 text-gray-2 text-xs">
+                      {agg.position.finAccount?.name}
+                    </td>
+                    <td className="px-6 py-3 text-gray-2 text-xs">
+                      {agg.position.unitKind.charAt(0) +
+                        agg.position.unitKind.slice(1).toLowerCase()}
+                    </td>
+                    <td className="px-6 py-3 text-right text-white font-mono text-xs">
+                      {fmt.format(agg.quantity.toNumber())}
+                    </td>
+                    <td className="px-6 py-3 text-right text-white font-mono text-xs">
+                      {fmt.format(agg.avgCostPerUnit.toNumber())}{" "}
+                      {agg.position.finAccount?.currency}
+                    </td>
+                    <td className="px-6 py-3 text-right text-white font-mono text-xs">
+                      {fmt.format(agg.totalCostBasis.toNumber())}{" "}
+                      {agg.position.finAccount?.currency}
+                    </td>
+                    <td
+                      className={`px-6 py-3 text-right font-mono text-xs ${
+                        agg.realizedPnL.isNegative() ? "text-[var(--color-down)]" : "text-[var(--color-up)]"
+                      }`}
+                    >
+                      {agg.realizedPnL.isNegative() ? "−" : "+"}
+                      {fmt.format(agg.realizedPnL.abs().toNumber())}{" "}
+                      {agg.position.finAccount?.currency}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
