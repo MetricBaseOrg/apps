@@ -154,36 +154,65 @@ async function main() {
       },
     });
   }
-  let position = await db.investmentPosition.findFirst({
-    where: { workspaceId: personal.id, symbol: "AAPL" },
+  let position = await db.position.findFirst({
+    where: { finAccountId: brokerage.id, symbol: "AAPL" },
   });
   if (!position) {
-    position = await db.investmentPosition.create({
+    position = await db.position.create({
       data: {
         workspaceId: personal.id,
         finAccountId: brokerage.id,
         symbol: "AAPL",
-        name: "Apple Inc.",
-        currency: "USD",
-        lastPrice: "210",
-        lastPriceAt: new Date(),
       },
     });
-    await db.investmentLot.createMany({
+
+    const txn1 = await db.transaction.create({
+      data: {
+        workspaceId: personal.id,
+        finAccountId: brokerage.id,
+        date: new Date(Date.now() - 120 * 86_400_000),
+        amount: "1500",
+        currency: "USD",
+        fxRate: "1",
+        baseAmount: "1500",
+        type: "EXPENSE",
+        memo: "Buy AAPL",
+      }
+    });
+
+    const txn2 = await db.transaction.create({
+      data: {
+        workspaceId: personal.id,
+        finAccountId: brokerage.id,
+        date: new Date(Date.now() - 40 * 86_400_000),
+        amount: "900",
+        currency: "USD",
+        fxRate: "1",
+        baseAmount: "900",
+        type: "EXPENSE",
+        memo: "Buy AAPL",
+      }
+    });
+
+    await db.lot.createMany({
       data: [
         {
           positionId: position.id,
+          transactionId: txn1.id,
+          side: "BUY",
           quantity: "10",
-          remainingQuantity: "10",
-          costPerUnit: "150",
-          acquiredAt: new Date(Date.now() - 120 * 86_400_000),
+          remainingQty: "10",
+          unitCost: "150",
+          acquiredDate: new Date(Date.now() - 120 * 86_400_000),
         },
         {
           positionId: position.id,
+          transactionId: txn2.id,
+          side: "BUY",
           quantity: "5",
-          remainingQuantity: "5",
-          costPerUnit: "180",
-          acquiredAt: new Date(Date.now() - 40 * 86_400_000),
+          remainingQty: "5",
+          unitCost: "180",
+          acquiredDate: new Date(Date.now() - 40 * 86_400_000),
         },
       ],
     });
