@@ -94,6 +94,7 @@ model Workspace {
   tags             Tag[]
   recurringRules   RecurringRule[]
   positions        Position[]
+  investmentPositions InvestmentPosition[]
   invites          WorkspaceInvite[]
   auditLogs        AuditLog[]
 }
@@ -138,6 +139,7 @@ model FinAccount {
   recurringRulesPrimary  RecurringRule[] @relation("RecurringPrimaryAcct")
   recurringRulesCounter  RecurringRule[] @relation("RecurringCounterAcct")
   positions              Position[]
+  investmentPositions    InvestmentPosition[]
 
   @@index([workspaceId])
 }
@@ -213,6 +215,7 @@ model Transaction {
   position       Position?        @relation(fields: [positionId], references: [id])
   tags           TransactionTag[]
   lot            Lot?
+  dividend       Dividend?
 
   @@index([workspaceId, date])
   @@index([workspaceId, categoryId, date])
@@ -318,48 +321,124 @@ model Lot {
   @@index([positionId])
 }
 
-// ─── Phase 1: Workspace Invites & Audit Logs ────────────────────────────────
+// ─── Phase 2: Invites, Audit, Investments ────────────────────────────────
 
-enum InviteStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  ARCHIVE
+  UNARCHIVE
+  INVITE_CREATE
+  INVITE_REVOKE
+  INVITE_ACCEPT
+  MEMBER_ROLE_CHANGE
+  MEMBER_REMOVE
+  INVESTMENT_BUY
+  INVESTMENT_SELL
+  INVESTMENT_DIVIDEND
+}
+
+enum AuditEntityType {
+  ACCOUNT
+  TRANSACTION
+  CATEGORY
+  WORKSPACE
+  FX_RATE
+  MEMBERSHIP
+  INVITE
+  INVESTMENT_POSITION
+  INVESTMENT_LOT
+  DIVIDEND
 }
 
 model WorkspaceInvite {
-  id          String       @id @default(cuid())
-  email       String
-  workspaceId String
-  inviterId   String
-  inviteeId   String?
-  role        Role         @default(MEMBER)
-  token       String       @unique
-  status      InviteStatus @default(PENDING)
-  expiresAt   DateTime
-  createdAt   DateTime     @default(now())
+  id               String    @id @default(cuid())
+  workspaceId      String
+  token            String    @unique @default(cuid())
+  role             Role      @default(MEMBER)
+  email            String?
+  createdByUserId  String
+  expiresAt        DateTime
+  acceptedAt       DateTime?
+  acceptedByUserId String?
+  createdAt        DateTime  @default(now())
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  inviter   User      @relation("InvitesCreated", fields: [inviterId], references: [id], onDelete: Cascade)
-  invitee   User?     @relation("InvitesAccepted", fields: [inviteeId], references: [id], onDelete: SetNull)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdByUser User      @relation("InvitesCreated", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  acceptedByUser User?    @relation("InvitesAccepted", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
 
-  @@unique([email, workspaceId])
   @@index([workspaceId])
-  @@index([token])
+  @@index([email])
 }
 
 model AuditLog {
-  id          String   @id @default(cuid())
-  workspaceId String?
-  userId      String
-  action      String
-  entityId    String?
-  entityType  String?
-  details     String?  @db.Text
-  createdAt   DateTime @default(now())
+  id          String         @id @default(cuid())
+  workspaceId String
+  userId      String?
+  action      AuditAction
+  entityType  AuditEntityType
+  entityId    String
+  summary     String
+  metadata    Json?
+  createdAt   DateTime       @default(now())
 
-  user        User       @relation("AuditLogs", fields: [userId], references: [id], onDelete: Cascade)
-  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User?     @relation("AuditLogs", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, createdAt])
+  @@index([workspaceId, action])
+  @@index([workspaceId, entityType])
+}
+
+model InvestmentPosition {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  finAccountId String
+  symbol       String
+  name         String?
+  currency     String
+  lastPrice    Decimal?  @db.Decimal(20, 8)
+  lastPriceAt  DateTime?
+  realizedPl   Decimal   @default(0) @db.Decimal(20, 4)
+  closedAt     DateTime?
+  createdAt    DateTime  @default(now())
+
+  workspace  Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  finAccount FinAccount     @relation(fields: [finAccountId], references: [id])
+  lots       InvestmentLot[]
+  dividends  Dividend[]
 
   @@index([workspaceId])
-  @@index([userId])
+  @@index([finAccountId])
+}
+
+model InvestmentLot {
+  id                String   @id @default(cuid())
+  positionId        String
+  quantity          Decimal  @db.Decimal(20, 4)
+  remainingQuantity Decimal  @db.Decimal(20, 4)
+  costPerUnit       Decimal  @db.Decimal(20, 8)
+  fees              Decimal? @db.Decimal(20, 4)
+  acquiredAt        DateTime
+  createdAt         DateTime @default(now())
+
+  position InvestmentPosition @relation(fields: [positionId], references: [id], onDelete: Cascade)
+
+  @@index([positionId, acquiredAt])
+}
+
+model Dividend {
+  id            String   @id @default(cuid())
+  positionId    String
+  totalAmount   Decimal  @db.Decimal(20, 4)
+  currency      String
+  payDate       DateTime
+  transactionId String?  @unique
+  createdAt     DateTime @default(now())
+
+  position    InvestmentPosition @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  transaction Transaction?       @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  @@index([positionId, payDate])
 }

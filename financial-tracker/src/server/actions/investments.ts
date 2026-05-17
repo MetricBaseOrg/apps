@@ -203,3 +203,7 @@ export async function updatePositionPrice(slug: string, _prev: InvestmentActionS
 export async function closePosition(slug: string, positionId: string): Promise<InvestmentActionState> {
   return { error: "Not implemented. Use recordTrade instead." };
 }
+
+export async function createPosition(slug: string, _prev: InvestmentActionState | undefined, formData: FormData): Promise<InvestmentActionState> {
+  return { error: "Not implemented. Use recordTrade instead." };
+}
