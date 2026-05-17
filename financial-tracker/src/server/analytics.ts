@@ -16,6 +16,9 @@ export type DashboardSummary = {
   categoryBreakdown: { name: string; value: number; color: string | null }[];
   sankey: { sources: SankeySource[]; sinks: SankeySink[] };
   recent: Awaited<ReturnType<typeof recentTxns>>;
+  balanceSeries: { date: string; value: number }[];
+  rangeStart: Date;
+  rangeEnd: Date;
 };
 
 async function recentTxns(workspaceId: string) {
@@ -45,8 +48,6 @@ function periodRange(
         (customRange.end.getUTCMonth() - customRange.start.getUTCMonth()) +
         1
     );
-    // ensure rangeEnd is the next day after the end date if it's not already exclusive
-    // Actually, let's keep it as is, assuming customRange.end is exclusive.
     return { rangeStart: customRange.start, rangeEnd: customRange.end, barMonths };
   }
 
@@ -72,7 +73,6 @@ function periodRange(
     case "1y":
       return { rangeStart: new Date(Date.UTC(now.getUTCFullYear() - 1, now.getUTCMonth() + 1, 1)), rangeEnd, barMonths: 12 };
     case "custom":
-      // fallback if customRange is missing
       return { rangeStart: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)), rangeEnd, barMonths: 1 };
   }
 }
@@ -263,6 +263,53 @@ export async function buildDashboard(
 
   const recent = await recentTxns(workspaceId);
 
+  // ── Running Balance (1 Year Max) ──
+  const oneYearAgo = new Date();
+  oneYearAgo.setUTCFullYear(oneYearAgo.getUTCFullYear() - 1);
+  oneYearAgo.setUTCHours(0, 0, 0, 0);
+
+  const accounts = await db.finAccount.findMany({ where: { workspaceId }, select: { openingBalance: true } });
+  let totalOpening = 0;
+  for (const a of accounts) {
+    totalOpening += new Decimal(a.openingBalance.toString()).toNumber();
+  }
+
+  const [priorInc, priorExp] = await Promise.all([
+    db.transaction.aggregate({ where: { workspaceId, type: "INCOME", date: { lt: oneYearAgo } }, _sum: { baseAmount: true } }),
+    db.transaction.aggregate({ where: { workspaceId, type: "EXPENSE", date: { lt: oneYearAgo } }, _sum: { baseAmount: true } })
+  ]);
+  
+  let currentBalance = totalOpening 
+    + new Decimal(priorInc._sum.baseAmount?.toString() || 0).toNumber()
+    - new Decimal(priorExp._sum.baseAmount?.toString() || 0).toNumber();
+
+  const yearTxns = await db.transaction.findMany({
+    where: { workspaceId, type: { in: ["INCOME", "EXPENSE"] }, date: { gte: oneYearAgo } },
+    select: { date: true, type: true, baseAmount: true },
+    orderBy: { date: "asc" }
+  });
+
+  const txnsByDay = new Map<string, number>();
+  for (const t of yearTxns) {
+    const day = t.date.toISOString().slice(0, 10);
+    const amt = new Decimal(t.baseAmount.toString()).toNumber();
+    const net = t.type === "INCOME" ? amt : -amt;
+    txnsByDay.set(day, (txnsByDay.get(day) || 0) + net);
+  }
+
+  const balanceSeries: { date: string; value: number }[] = [];
+  const iterDate = new Date(oneYearAgo);
+  const endIterDate = new Date();
+  endIterDate.setUTCHours(0, 0, 0, 0); // up to today
+
+  while (iterDate <= endIterDate) {
+    const day = iterDate.toISOString().slice(0, 10);
+    const dayNet = txnsByDay.get(day) || 0;
+    currentBalance += dayNet;
+    balanceSeries.push({ date: day, value: currentBalance });
+    iterDate.setUTCDate(iterDate.getUTCDate() + 1);
+  }
+
   return {
     cashflowMtd: cashflowMtd.toString(),
     incomeMtd: incomeMtd.toString(),
@@ -272,6 +319,9 @@ export async function buildDashboard(
     categoryBreakdown,
     sankey,
     recent,
+    balanceSeries,
+    rangeStart: monthStart,
+    rangeEnd: nextMonthStart,
   };
 }
 

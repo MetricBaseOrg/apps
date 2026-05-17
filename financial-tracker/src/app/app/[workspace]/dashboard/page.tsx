@@ -7,6 +7,7 @@ import { Money } from "@/components/mb/Money";
 import { CashflowBar } from "@/components/charts/CashflowBar";
 import { CategoryDonut } from "@/components/charts/CategoryDonut";
 import { SankeyChart } from "@/components/charts/SankeyChart";
+import { BalanceLineChart } from "@/components/charts/BalanceLineChart";
 import { TimeframePicker } from "@/components/mb/TimeframePicker";
 import { buildDashboard, buildAlerts } from "@/server/analytics";
 import { PERIOD_LABELS } from "@/lib/periods";
@@ -91,6 +92,16 @@ export default async function DashboardPage({
           </span>
         </Link>
       )}
+
+      <div className="mb-card p-6 flex flex-col gap-4">
+        <Eyebrow>Net Worth Balance</Eyebrow>
+        <BalanceLineChart 
+          series={data.balanceSeries} 
+          currency={workspace.baseCurrency}
+          globalStart={data.rangeStart}
+          globalEnd={data.rangeEnd}
+        />
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-[var(--color-line)]">
         <KpiCard
