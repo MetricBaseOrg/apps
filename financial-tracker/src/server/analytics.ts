@@ -31,7 +31,7 @@ export type { DashboardPeriod };
 export { PERIOD_LABELS };
 
 const INCOME_COLORS = ["#c9a84c", "#e5c168", "#d9b958", "#bfa44d", "#8a7434", "#a18838", "#6b5826", "#7b6630"];
-const EXPENSE_COLORS = ["#c9a84c", "#e5c168", "#8a7434", "#a18838", "#d9b958", "#bfa44d", "#6b5826", "#7b6630"];
+const EXPENSE_COLORS = ["#ef4444", "#dc2626", "#b91c1c", "#f87171", "#991b1b", "#fca5a5", "#7f1d1d", "#fecaca"];
 const INVEST_COLOR = "#4a9eff";
 
 function periodRange(period: DashboardPeriod): { rangeStart: Date; rangeEnd: Date; barMonths: number } {
@@ -55,6 +55,12 @@ export async function buildDashboard(
   workspaceId: string,
   period: DashboardPeriod = "mtd",
 ): Promise<DashboardSummary> {
+  const workspace = await db.workspace.findUnique({
+    where: { id: workspaceId },
+    select: { type: true },
+  });
+  const isCompany = workspace?.type === "COMPANY";
+
   const now = new Date();
   const { rangeStart: monthStart, rangeEnd: nextMonthStart, barMonths } = periodRange(period);
   const prevMonthStart = new Date(
@@ -208,6 +214,23 @@ export async function buildDashboard(
       value: Math.round(c.value),
       color: c.color ?? EXPENSE_COLORS[0],
     }));
+
+  const totalSrcVal = sources.reduce((s, x) => s + x.value, 0);
+  const totalSnkVal = sinks.reduce((s, x) => s + x.value, 0);
+
+  if (totalSrcVal > totalSnkVal && totalSrcVal > 0) {
+    sinks.push({
+      name: isCompany ? "Net profit" : "Net savings",
+      value: totalSrcVal - totalSnkVal,
+      color: "#22c55e", // Green
+    });
+  } else if (totalSnkVal > totalSrcVal && totalSnkVal > 0) {
+    sources.push({
+      name: isCompany ? "Net loss" : "Net savings",
+      value: totalSnkVal - totalSrcVal,
+      color: "#ef4444", // Red
+    });
+  }
 
   const sankey = { sources, sinks };
 
