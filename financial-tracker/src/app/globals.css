@@ -287,3 +287,10 @@ body {
 }
 
 .sankey-flow { transition: fill-opacity 150ms ease; }
+
+/* ── Date input calendar icon ── */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(75%) sepia(40%) saturate(600%) hue-rotate(5deg) brightness(95%);
+  cursor: pointer;
+  opacity: 1;
+}
