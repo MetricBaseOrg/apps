@@ -116,9 +116,23 @@ src/
 
 **Design system** — MetricBase tokens are in `src/app/globals.css` via Tailwind v4 `@theme`: black/gold palette (`#0a0a0a` / `#c9a84c`), Manrope + JetBrains Mono, `border-radius: 0` everywhere. Never add `border-radius` or deviate from the token set.
 
+## Commands
+
+```bash
+npm run dev                              # start dev server → http://localhost:3000
+npm run build                            # production build
+npm run lint                             # ESLint
+npx tsc --noEmit                         # TypeScript type-check
+npx prisma migrate dev --name <name>     # create + apply migration
+npx prisma generate                      # regenerate client after schema change
+npx prisma studio                        # GUI for the database
+```
+
+There is no test suite — verify changes by running the dev server.
+
 ## Running locally
 
-```powershell
+```bash
 npm install
 cp .env.example .env.local   # fill in secrets
 npx prisma migrate dev
