@@ -15,7 +15,7 @@ export default async function WorkspaceSettingsPage({
     where: { workspaceId: workspace.id },
   });
   return (
-    <div className="flex flex-col gap-8 max-w-2xl">
+    <div className="flex flex-col gap-8 max-w-2xl mx-auto w-full">
       <Link
         href={`/app/${slug}/dashboard`}
         className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-2 hover:text-gold transition-colors self-start"

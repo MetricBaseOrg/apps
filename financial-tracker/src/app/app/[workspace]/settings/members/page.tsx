@@ -37,7 +37,7 @@ export default async function MembersSettingsPage({
   );
 
   return (
-    <div className="flex flex-col gap-8 max-w-[1240px]">
+    <div className="flex flex-col gap-8 max-w-[1240px] mx-auto w-full">
       <Link
         href={`/app/${slug}/dashboard`}
         className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-2 hover:text-gold transition-colors self-start"
